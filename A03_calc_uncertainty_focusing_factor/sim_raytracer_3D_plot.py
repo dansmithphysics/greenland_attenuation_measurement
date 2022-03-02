@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 homo_data = np.load("./ray_tracing_results/data_focus_3d_homo_raytracer_posese_model.npy.npz")
 inhomo_data = np.load("./ray_tracing_results/data_focus_3d_inhomo_raytracer_posese_model.npy.npz")
 
@@ -16,16 +17,15 @@ print(n_homo, n_inhomo, np.sqrt(n_inhomo / n_homo))
 
 h_homo, xedges, yedges, thing = plt.hist2d(homo_x,
                                            homo_y,
-                                           range = ((0.0, 600.0), (0.0, 600.0)),
-                                           bins = (10, 10))
+                                           range=((0.0, 600.0), (0.0, 600.0)),
+                                           bins=(10, 10))
 h_inhomo, xedges, yedges, thing = plt.hist2d(inhomo_x,
                                              inhomo_y,
-                                             range = ((0.0, 600.0), (0.0, 600.0)),
-                                             bins = (10, 10))
-
-plt.close()
+                                             range=((0.0, 600.0), (0.0, 600.0)),
+                                             bins=(10, 10))
 
 plt.figure()
-plt.imshow(np.sqrt(h_inhomo / h_homo), vmin = 0.0, vmax = 2.0)
+plt.imshow(np.sqrt(h_inhomo / h_homo),
+           vmin=0.0, vmax=2.0)
 plt.colorbar()
 plt.show()
