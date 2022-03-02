@@ -1,104 +1,168 @@
 import glob
-import scipy.signal
 import numpy as np
 import matplotlib.pyplot as plt
 
-def load_and_plot(file_name, att_correction, title, xlim, ylim, save_name):
+
+def load_and_plot(file_name, att_correction, title,
+                  time_offset=0,
+                  xlim=None, ylim=None, fig_size=None, save_name=None):
     try:
         data_ice = np.load(file_name)
     except FileNotFoundError:
         print("File not found: %s" % file_name)
-        return 
-    
+        return
+
     data_t = data_ice["template_time"]
     data_trace = data_ice["template_trace"]
 
+    data_t += time_offset
     data_trace *= np.power(10.0, att_correction / 20.0)
-    
-    plt.figure()
+
+    if fig_size is None:
+        plt.figure()
+    else:
+        plt.figure(figsize=fig_size)
+
+    plt.tight_layout()
+
     plt.title(title)
-    plt.plot(data_t * 1e6, data_trace * 1e3, alpha = 1.0, color = 'black', linewidth = 1.0)
-    plt.xlabel("Time [$\mu$s]")
+    plt.plot(data_t * 1e6, data_trace * 1e3,
+             alpha=1.0, color='black', linewidth=1.0)
+    plt.xlabel("Absolute Time Since Transmitted Pulse [$\mu$s]")
     plt.ylabel("Voltage [mV]")
-    if(xlim != None):
-        plt.xlim(xlim) 
-    if(ylim != None):
+
+    plt.axvspan(35.55, 35.55 + (35.05 - 34.59),
+                0.0, 1.0, alpha=0.25, color='purple',
+                label="Bedrock Echo")
+    plt.legend()
+
+    plt.subplots_adjust(bottom=0.2)
+
+    if xlim is not None:
+        plt.xlim(xlim)
+    if ylim is not None:
         plt.ylim(ylim)
     plt.grid()
-    if(save_name != None):
-        plt.savefig(save_name, dpi = 300)
+    if save_name is not None:
+        plt.savefig(save_name,
+                    dpi=300,
+                    bbox_inches='tight')
 
-def load_and_plot_sliding_power(file_name, att_correction, title, xlim, ylim, save_name, window_length = 250):
+
+def load_and_plot_sliding_power(file_name, att_correction, title,
+                                time_offset=0,
+                                xlim=None, ylim=None, fig_size=None,
+                                save_name=None, window_length=250):
     try:
         data_ice = np.load(file_name)
     except FileNotFoundError:
         print("File not found: %s" % file_name)
-        return 
-    
+        return
+
     data_t = data_ice["template_time"]
     data_trace = data_ice["template_trace"]
 
+    data_t += time_offset
     data_trace *= np.power(10.0, att_correction / 20.0)
 
-    data_power_mW = np.power(data_trace * 1e3, 2.0) / 50.0
-    time_length = window_length * (data_t[1] - data_t[0]) * 1e9
+    if fig_size is None:
+        plt.figure()
+    else:
+        plt.figure(figsize=fig_size)
 
-    window = scipy.signal.windows.tukey(window_length, alpha = 0.25)
-    
-    rolling = np.convolve(data_power_mW / time_length,
-                          window,
+    plt.tight_layout()
+
+    data_power_mW = np.power(data_trace, 2.0) / 50.0 * 1e3
+    delta_t = (data_t[1] - data_t[0]) * 1e9
+    time_length = window_length * delta_t
+
+    rolling = np.convolve(data_power_mW * delta_t,
+                          np.ones(window_length),
                           'valid')
 
-    data_t = (data_t[(window_length - 1):] + data_t[:-(window_length - 1)]) / 2.0
-    
-    plt.figure()
+    # rolling is the integrated sliding window result and has units of mW * ns
+
+    data_t = (data_t[(window_length - 1):]
+              + data_t[:-(window_length - 1)]) / 2.0
+
     plt.title(title)
-    plt.semilogy(data_t * 1e6, rolling, alpha = 1.0, color = 'black', linewidth = 1.0)
-    plt.xlabel("Time [$\mu$s]")
-    plt.ylabel("Integrated Power [mW / ns]")
-    if(xlim != None):
-        plt.xlim(xlim) 
-    if(ylim != None):
-        plt.ylim(ylim) 
+    plt.semilogy(data_t * 1e6, rolling,
+                 alpha=1.0, color='black', linewidth=1.0)
+
+    plt.axvspan(35.55, 35.55 + (35.05 - 34.59),
+                0.0, 1.0, alpha=0.25, color='purple',
+                label="Bedrock Echo")
+    plt.legend()
+
+    plt.subplots_adjust(bottom=0.2)
+
+    plt.xlabel("Absolute Time Since Transmitted Pulse [$\mu$s]")
+    plt.ylabel("Integrated Power [mW ns]")
+    if xlim is not None:
+        plt.xlim(xlim)
+    if ylim is not None:
+        plt.ylim(ylim)
     plt.grid()
-    if(save_name != None):
-        plt.savefig(save_name, dpi = 300)
+    if save_name is not None:
+        plt.savefig(save_name, dpi=300, bbox_inches='tight')
+
 
 if __name__ == "__main__":
 
-    load_and_plot("data_processed/averaged_in_ice_trace.npz",
-                  att_correction = 0.0,
-                  title = "Ice Echo Data",
-                  xlim = (-1.0, 40.0),
-                  ylim = (-10.0, 10.0),
-                  save_name = "./plots/A02_plot_averages_inice_zoomed_out.png")
+    # correction to bring t0 to zero
+    # corrects for cable delays, ect.
+    time_offset = (35.55e-6 - 34.59e-6)
 
     load_and_plot("data_processed/averaged_in_ice_trace.npz",
-                  att_correction = 0.0,
-                  title = "Ice Echo Data",
-                  xlim = (-1.0, 40.0),
-                  ylim = (-1.0, 1.0),
-                  save_name = "./plots/A02_plot_averages_inice_zoomed_in.png")
+                  att_correction=0.0,
+                  time_offset=time_offset,
+                  title="Ice Echo Data",
+                  xlim=(-1.0, 40.0),
+                  ylim=(-10.0, 10.0),
+                  save_name="./plots/A02_plot_averages_inice_zoomed_out.png")
 
     load_and_plot("data_processed/averaged_in_ice_trace.npz",
-                  att_correction = 0.0,
-                  title = "Ice Echo Data from Bed Rock",
-                  xlim = (30.0, 40.0),
-                  ylim = (-0.75, 0.75),
-                  save_name = "./plots/A02_plot_averages_inice_ground_bounce.png")
-    
+                  att_correction=0.0,
+                  time_offset=time_offset,
+                  title="",
+                  xlim=(10.0, 43.0),
+                  ylim=(-1.0, 1.0),
+                  fig_size=(8, 3),
+                  save_name="./plots/A02_plot_averages_inice.png")
+
+    load_and_plot("data_processed/averaged_in_ice_trace.npz",
+                  att_correction=0.0,
+                  time_offset=time_offset,
+                  title="",
+                  xlim=(34.0, 39.0),
+                  ylim=(-0.75, 0.75),
+                  fig_size=(3.8, 3),
+                  save_name="./plots/A02_plot_averages_inice_ground_bounce.png")
+
     load_and_plot_sliding_power("data_processed/averaged_in_ice_trace.npz",
-                                att_correction = 0.0,
-                                title = "Ice Echo Data from Bed Rock, Integrated in Sliding Window",
-                                xlim = (33.0, 38.0),
-                                ylim = (1e-5, 1e-2),
-                                save_name = "./plots/A02_plot_averages_inice_ground_bounce_integrated.png")
-    
+                                att_correction=0.0,
+                                time_offset=time_offset,
+                                title="",
+                                xlim=(10.0, 43.0),
+                                ylim=(5e-7, 5e-4),
+                                fig_size=(8, 3),
+                                save_name="./plots/A02_plot_averages_inice_integrated.png")
+
+    load_and_plot_sliding_power("data_processed/averaged_in_ice_trace.npz",
+                                att_correction=0.0,
+                                time_offset=time_offset,
+                                title="",
+                                xlim=(34.0, 39.0),
+                                ylim=(5e-7, 5e-4),
+                                fig_size=(3.8, 3),
+                                save_name="./plots/A02_plot_averages_inice_ground_bounce_integrated.png")
+
     load_and_plot("data_processed/averaged_in_air_trace.npz",
-                  att_correction = 0.0,
-                  title = "Air-to-Air Result",
-                  xlim = (-0.07, 0.4),
-                  ylim = (-500.0, 500.0),
-                  save_name = "./plots/A02_plot_averages_inair_uncorrected.png")
-    
-    plt.show()    
+                  att_correction=0.0,
+                  time_offset=0.0,
+                  title="Air-to-Air Result",
+                  xlim=(-0.07, 0.4),
+                  ylim=(-500.0, 500.0),
+                  save_name="./plots/A02_plot_averages_inair_uncorrected.png")
+
+    plt.show()
