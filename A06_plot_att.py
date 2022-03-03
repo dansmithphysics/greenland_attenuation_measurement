@@ -107,8 +107,8 @@ if __name__ == "__main__":
     result_err -= result
 
     result_data = np.load("./data_processed/A05_mc_results.npz")
-
-    for scale_to_top_1p5k in [1.0, 1.136396097266964]:
+    
+    for scale_to_top_1p5k in [1.0, 1.1997683538791095]:
 
         x = result_data['freqs']
         yerr_min = result_data['low_bound']
