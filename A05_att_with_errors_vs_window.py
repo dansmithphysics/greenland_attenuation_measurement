@@ -60,7 +60,7 @@ def calculate_att(T_ratio, R, focusing_factor,
     return att
 
 
-def perform_mc(t_gb, t_noise, gb_duration=10e-6,
+def perform_mc(t_gb, t_noise, gb_duration=5e-6,
                nthrows=1000, time_offset=0.0):
 
     # Load up the data
@@ -132,10 +132,6 @@ def perform_mc(t_gb, t_noise, gb_duration=10e-6,
 
     atts = np.zeros((nthrows, len(Pxx_air)))
 
-    # linear fit values
-    ms = np.zeros(nthrows)
-    bs = np.zeros(nthrows)
-
     for i_throw in range(nthrows):
         att = calculate_att(T_ratio=T_ratio[i_throw],
                             R=R_[i_throw],
@@ -145,42 +141,21 @@ def perform_mc(t_gb, t_noise, gb_duration=10e-6,
                             air_prop=air_prop[i_throw],
                             ice_prop=ice_prop[i_throw])
 
-        selection_region = np.logical_and(freqs > 140e6, freqs < 400e6)
-        selection_region = np.logical_and(selection_region, att > 100.0)
-        selection_region = np.logical_and(selection_region, att < 2000.0)
-
-        freqs_to_fit = freqs[selection_region]
-        att_to_fit = att[selection_region]
-
-        try:
-            m, b = np.polyfit(freqs_to_fit, att_to_fit, 1)
-        except Exception as e:
-            print("Error '{0}' occured. Arguments {1}.".format(e.message, e.args))
-            print("Fit was most likely passed nan/inf")
-            raise
-
-        ms[i_throw] = m
-        bs[i_throw] = b
-
-        print(i_throw, ")", m * 1e6, "m / MHz", b, "m")
         atts[i_throw] = att
 
-    return ms, bs, freqs, atts
+    return freqs, atts
 
 
-def main():
+def main(nthrows=1000, t_gb=(35.55e-6, 36.05e-6)):
 
-    nthrows = 1000
-
-    t_gb = (35.55e-6, 36.05e-6)  # Seconds
     t_noise = (22.0e-6, 34.0e-6)  # Seconds
 
     time_offset = (35.55e-6 - 34.59e-6)  # Seconds
 
-    ms, bs, att_freqs, atts = perform_mc(t_gb=t_gb,
-                                         t_noise=t_noise,
-                                         nthrows=nthrows,
-                                         time_offset=time_offset)
+    att_freqs, atts = perform_mc(t_gb=t_gb,
+                                 t_noise=t_noise,
+                                 nthrows=nthrows,
+                                 time_offset=time_offset)
 
     new_freqs = np.linspace(150e6, 566.6666e6, 26)
 
@@ -222,15 +197,82 @@ def main():
             low_bound[i_unique_freq] = atts_[cumsum_min]
             high_bound[i_unique_freq] = atts_[cumsum_max]
 
-    np.savez("./data_processed/A05_mc_results",
-             ms=ms,
-             bs=bs,
-             freqs=freqs,
-             low_bound=low_bound,
-             high_bound=high_bound,
-             middle_val=middle_val)
+    return freqs, low_bound, high_bound, middle_val
 
 
 if __name__ == "__main__":
 
-    main()
+    start_time = 35.55e-6
+
+    end_times = np.linspace(start_time + 0.1e-6,
+                            start_time + 4.0e-6,
+                            5)
+    end_times = np.append(end_times, [36.05e-6])
+    end_times = np.sort(end_times)
+
+    vals = np.zeros(len(end_times))
+    vals_min = np.zeros(len(end_times))
+    vals_max = np.zeros(len(end_times))
+
+    freq_select = 2  # 200 MHz
+
+    for i_end_time, end_time in enumerate(end_times):
+        print(start_time, end_time, end_time-start_time)
+
+        t_gb = (start_time, end_time)  # Seconds
+
+        freqs, low_bound, high_bound, middle_val = main(nthrows=1000,
+                                                        t_gb=t_gb)
+
+        vals[i_end_time] = middle_val[freq_select]
+        vals_min[i_end_time] = low_bound[freq_select]
+        vals_max[i_end_time] = high_bound[freq_select]
+
+    plt.figure(figsize=(5, 4))
+
+    plt.plot((end_times[vals_min != 0] - start_time) / 1e-6,
+             vals[vals_min != 0],
+             color='red')
+
+    plt.fill_between((end_times[vals_min != 0] - start_time) / 1e-6,
+                     vals_min[vals_min != 0],
+                     vals_max[vals_min != 0],
+                     color='red',
+                     alpha=0.5,
+                     label="Modified Time Window Result, 1 $\sigma$ Errors")
+
+    plt.fill_between((end_times - start_time) / 1e-6,
+                     vals_min,
+                     vals_max,
+                     color='red',
+                     alpha=0.5,
+                     label="Modified Time Window Result, 1 $\sigma$ Errors")
+
+    plt.scatter(36.1 - start_time / 1e-6,
+                711.0,
+                color='black')
+
+    plt.errorbar(36.1 - start_time / 1e-6,
+                 711.0,
+                 yerr=([711.0 - 653.0], [772.0 - 711.0]),
+                 label="Nominal Result, 1 $\sigma$ Errors",
+                 color='black',
+                 ls='none')
+
+    plt.grid()
+    plt.xlim(0, 4.0)
+    plt.ylim(500.0, 1100.0)
+
+    yticks = np.arange(500, 1101, 100)
+    yticks = np.append(yticks, [653.0, 711.0, 772.0])
+    yticks = np.sort(yticks)
+    yticklabels = [str(int(i)) if i % 100 == 0 else '' for i in yticks]
+    plt.yticks(yticks, labels=yticklabels)
+
+    plt.xlabel("Window Length Used in Analysis [$\mu$s]")
+    plt.ylabel("Bulk Field Attenuation Length at 200 MHz [m]")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("./plots/A05_att_increased_window.png",
+                dpi=300)
+    plt.show()
