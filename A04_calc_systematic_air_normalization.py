@@ -3,23 +3,12 @@ import matplotlib.pyplot as plt
 import glob
 import scipy.interpolate
 import scipy.signal
-from scipy.signal import butter, lfilter
 import copy
 
-def butter_bandpass(lowcut, highcut, fs, order=5):
-    nyq = 0.5 * fs
-    low = lowcut / nyq
-    high = highcut / nyq
-    b, a = butter(order, [low, high], btype='band')
-    return b, a
-
-def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
-    b, a = butter_bandpass(lowcut, highcut, fs, order=order)
-    y = lfilter(b, a, data)
-    return y
 
 def dbm(trace):
-    return 10.0 * np.log10(np.square(np.abs(trace) * 1e3) / 50.0) # 1e3 for mV
+    return 10.0 * np.log10(np.square(np.abs(trace)) / 50.0 * 1e3) # 1e3 for mW
+
 
 Z0 = 120.0 * np.pi
 ZL = 50.0
@@ -86,7 +75,7 @@ fid_fft = np.fft.rfft(data_fid_trace)
 # Frontend Amp #
 ################
 
-amp_freqs, amp_s21 = np.loadtxt("../../2021_09_30_antenna_response/amp_board_v2.txt", delimiter = ",", unpack = True, comments = "#")
+amp_freqs, amp_s21 = np.loadtxt("./data_raw/amp_board_v3.txt", delimiter = ",", unpack = True, comments = "#")
 amp_freqs *= 1e-3 # GHz
 amp_s21 = np.power(10.0, amp_s21 / 20.0)
 f_amp_s21 = scipy.interpolate.interp1d(amp_freqs, amp_s21,
@@ -160,18 +149,52 @@ airtoair_signal = np.abs(np.fft.rfft(data_air_trace))
 # Plotting #
 ############
 
-plt.plot(master_freqs * 1e3, dbm(airtoair_signal), color = 'black', label = "Data")
-plt.plot(master_freqs * 1e3, dbm(mine_signal), color = 'red', label = "xFDTD Sim")
-plt.plot(master_freqs * 1e3, dbm(numc_signal), color = 'purple', label = "NuRadioMC Sim")
+plt.figure(figsize = (5, 4))
+#plt.plot(master_freqs * 1e3, dbm(airtoair_signal), color = 'black', label = "Data")
+#plt.plot(master_freqs * 1e3, dbm(mine_signal), color = 'red', label = "xFDTD Simulation")
+#plt.plot(master_freqs * 1e3, dbm(numc_signal), color = 'purple', label = "WIPL-D Simulation")
 
-plt.title("Data vs. Simulation for LPDA Antennas seperated by 244 m")
+#f, Pxx = scipy.signal.periodogram(data_air_trace, 1.0 / (data_time[1] - data_time[0]), scaling = 'spectrum')
+f, Pxx_airtoair = scipy.signal.periodogram(data_air_trace,
+                                           1.0 / (master_times[1] - master_times[0]) * 1e9,
+                                            scaling = 'density',
+                                            return_onesided = True)
+Pxx_airtoair /= 50.0 # power on 50 Ohm
+Pxx_airtoair *= 1e3 # mW
+plt.plot(f * 1e-6, 10.0 * np.log10(Pxx_airtoair), color = 'black', label = "Data")
+
+f, Pxx_mine = scipy.signal.periodogram(np.fft.irfft(mine_signal),
+                                       1.0 / (master_times[1] - master_times[0]) * 1e9,
+                                       scaling = 'density',
+                                       return_onesided = True)
+
+Pxx_mine /= 50.0 # power on 50 Ohm
+Pxx_mine *= 1e3 # mW
+plt.plot(f * 1e-6, 10.0 * np.log10(Pxx_mine), color = 'red', label = "xFDTD Simulation")
+
+f, Pxx_numc = scipy.signal.periodogram(np.fft.irfft(numc_signal),
+                                       1.0 / (master_times[1] - master_times[0]) * 1e9,
+                                       scaling = 'density',
+                                       return_onesided = True)
+
+Pxx_numc /= 50.0 # power on 50 Ohm
+Pxx_numc *= 1e3 # mW
+plt.plot(f * 1e-6, 10.0 * np.log10(Pxx_numc), color = 'purple', label = "WIPL-D Simulation")
+
+#plt.plot(master_freqs * 1e3, dbm(mine_signal), color = 'red', label = "xFDTD Simulation")
+#plt.plot(master_freqs * 1e3, dbm(numc_signal), color = 'purple', label = "WIPL-D Simulation")
+
+#plt.title("Data vs. Simulation for LPDA Antennas seperated by 244 m")
 plt.xlim(0.0, 750.0)
-plt.ylim(110.0, 160.0)
-plt.xlabel("Freqs. [MHz]")
-plt.ylabel("Power at Scope [dBm]")
+plt.ylim(-85.0, -45.0) 
+plt.xlabel("Frequency [MHz]")
+plt.ylabel("Power at Oscilloscope [dBm / Hz]")
 plt.grid()
 plt.legend()
 plt.savefig("./plots/A04_calc_systematics_air_normalization_no_reflections.png", dpi = 300)
+
+plt.show()
+exit()
 
 ##############
 # Reflection #

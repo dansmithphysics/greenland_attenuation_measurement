@@ -11,6 +11,8 @@ The data taken in the field is available from the RNO-G wiki. The three data sou
 
 Simulations are also required. The simulations performed on xFDTD are not yet documented elsewhere so are included in this repository [here](data_simulated/lpda_xfdtd_sims/). The simulations performed in NuRadioMC are available [here for the in air simulation](http://arianna.ps.uci.edu/~arianna/data/AntennaModels/createLPDA_100MHz_InfAir/) and [here for the in ice simulation](http://arianna.ps.uci.edu/~arianna/data/AntennaModels/createLPDA_100MHz_InfFirn_n1.4/), and are documented [here](https://github.com/nu-radio/NuRadioReco/wiki/Antenna-models). 
 
+For the air-to-air normalization study, the amplifier response and s-parameter files of filters are also required. They're included in the repository. The amplifier response can be derived from [RNO-G's detector paper, Fig. 17](https://arxiv.org/pdf/2010.12279.pdf). The s-parameter files are all from Minicircuits website and datasheets for [VHF-145+.S2P](https://www.minicircuits.com/pdfs/VHF-145+.pdf) and [VLF-575+](https://www.mouser.com/datasheet/2/1030/VLF-575-1701652.pdf). 
+
 ## Analysis Scripts
 
 ### A01_average_and_convert.py

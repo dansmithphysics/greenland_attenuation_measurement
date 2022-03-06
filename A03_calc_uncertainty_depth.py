@@ -168,7 +168,7 @@ if __name__ == "__main__":
     plt.xlabel("Depth [m]")
     plt.ylabel("CDF")
 
-    plt.savefig("./plots/A04_calc_uncertainty_plots_time_to_depth.png",
+    plt.savefig("./plots/A03_calc_uncertainty_plots_time_to_depth.png",
                 dpi=300)
 
     plt.show()
