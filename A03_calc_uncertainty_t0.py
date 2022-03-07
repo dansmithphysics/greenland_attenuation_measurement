@@ -2,6 +2,8 @@ import glob
 import scipy.signal
 import numpy as np
 import matplotlib.pyplot as plt
+import analysis_funcs
+import experiment
 
 
 def integrated_window(data_trace, data_t):
@@ -20,20 +22,22 @@ def integrated_window(data_trace, data_t):
 
 if __name__ == "__main__":
 
-    noise_times = [25.0e-6, 32.0e-6]
+    exper_constants = experiment.Experiment()    
+    
     window_length = 250
 
-    data = np.load("./data_processed/averaged_in_ice_trace.npz")
-    data_t = data["template_time"]
-    data_trace = data["template_trace"]
+    data_t, data_trace = analysis_funcs.load_file(file_name="./data_processed/averaged_in_ice_trace.npz",
+                                                  att_correction=exper_constants.ice_att,
+                                                  time_offset=exper_constants.time_offset)
 
+    
     #####################
     #      Raw Data     #
     #####################
 
     # Calculate the standard deviation of noise.
-    noise_std = np.std(data_trace[np.logical_and(data_t > noise_times[0],
-                                                 data_t < noise_times[1])])
+    noise_std = np.std(data_trace[np.logical_and(data_t > exper_constants.noise_start,
+                                                 data_t < exper_constants.noise_end)])
 
     plt.figure()
     plt.title("Ice Echo Data from Bed Rock")
@@ -43,11 +47,17 @@ if __name__ == "__main__":
              alpha=1.0, color='black', linewidth=1.0, label="Data")
 
     plt.axhline(3.0 * noise_std * 1e3, color='red', linestyle='--', label="3x Noise RMS")
-    plt.axvline(34.59, color='purple', linestyle='-', label="Start of G.B.")
-    plt.axvline(35.05, color='purple', linestyle="-.", label="End of G.B.")
+    plt.axvline(exper_constants.gb_start * 1e6,
+                color='purple',
+                linestyle='-',
+                label="Start of G.B.")
+    plt.axvline(exper_constants.gb_end * 1e6,
+                color='purple',
+                linestyle="-.",
+                label="End of G.B.")
     plt.xlabel("Time Since Trigger $t_0$ [$\mu$s]")
     plt.ylabel("Trace [mV]")
-    plt.xlim(33.0, 38.0)
+    plt.xlim(34.0, 39.0)
     plt.ylim(-0.7, 0.7)
     plt.legend(loc='upper right')
     plt.grid()
@@ -62,10 +72,11 @@ if __name__ == "__main__":
     rolling_t, rolling = integrated_window(data_trace, data_t)
 
     # Calculate a 95% CI of noise.
-    noise = rolling[np.logical_and(rolling_t > noise_times[0], rolling_t < noise_times[1])]
-    noise = np.sort(noise)
-    cumsum = np.cumsum(np.ones(len(noise)))
-    cumsum = np.array(cumsum) / float(cumsum[-1])
+    noise = rolling[np.logical_and(rolling_t > exper_constants.noise_start,
+                                   rolling_t < exper_constants.noise_end)]
+
+    noise, cumsum = analysis_funcs.calculate_uncertainty(noise)
+    
     noise_threshold = noise[np.argmin(np.abs(cumsum - 0.95))]
 
     plt.figure()
@@ -75,11 +86,17 @@ if __name__ == "__main__":
                  rolling, alpha=1.0, color='black', linewidth=1.0, label="Integrated Data")
 
     plt.axhline(noise_threshold, color='red', linestyle='--', label="95% CI of Noise")
-    plt.axvline(34.59, color='purple', linestyle='-', label="Start of G.B.")
-    plt.axvline(35.05, color='purple', linestyle="-.", label="End of G.B.")
+    plt.axvline(exper_constants.gb_start * 1e6,
+                color='purple',
+                linestyle='-',
+                label="Start of G.B.")
+    plt.axvline(exper_constants.gb_end * 1e6,
+                color='purple',
+                linestyle="-.",
+                label="End of G.B.")
     plt.xlabel("Time Since Trigger $t_0$ [$\mu$s]")
     plt.ylabel("Integrated Power [mW / ns]")
-    plt.xlim(33.0, 38.0)
+    plt.xlim(34.0, 39.0)
     plt.ylim(4e-6, 4e-2)
     plt.legend(loc='upper right')
     plt.grid()

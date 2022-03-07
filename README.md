@@ -15,6 +15,7 @@ The data taken in the field is available from the RNO-G wiki. The three data sou
 * [In ice data](https://radio.uchicago.edu/wiki/images/0/04/Groundbounce_in_ice_data_2021_08_02.zip)
 * [In air data](https://radio.uchicago.edu/wiki/images/f/fd/Groundbounce_in_air_data_46dB_2021_08_02.zip)
 * [LPDA S11 Measurement](https://radio.uchicago.edu/wiki/images/2/28/LPDA_Summit_Measurements.zip)
+* [FID pulser output](https://radio.uchicago.edu/wiki/images/d/da/Groundbounce_fid_pulser_after_sick_72db.zip)
 
 Simulations are also required. The simulations performed on xFDTD are not yet documented elsewhere so are included in this repository [here](data_simulated/lpda_xfdtd_sims/). The simulations performed in NuRadioMC are available [here for the in air simulation](http://arianna.ps.uci.edu/~arianna/data/AntennaModels/createLPDA_100MHz_InfAir/) and [here for the in ice simulation](http://arianna.ps.uci.edu/~arianna/data/AntennaModels/createLPDA_100MHz_InfFirn_n1.4/), and are documented [here](https://github.com/nu-radio/NuRadioReco/wiki/Antenna-models). 
 

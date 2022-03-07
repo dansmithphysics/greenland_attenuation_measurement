@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
+import analysis_funcs
 
 
 def load_s11_files(file_names):
@@ -123,14 +124,10 @@ if __name__ == "__main__":
                 dpi=300)
 
     entries = (maxs + mins)[np.logical_and(freq > 150.0e6, freq < 550.0e6)] / 2.0
-    entries = np.sort(entries)
-    cumsum = np.cumsum(np.ones(len(entries)))
-    cumsum = np.array(cumsum) / float(cumsum[-1])
+    entries, cumsum = analysis_funcs.calculate_uncertainty(entries)
 
-    entries_min = entries[np.argmin(np.abs(cumsum - (0.5 - 0.341)))]
-    entries_mid = entries[np.argmin(np.abs(cumsum - (0.5 - 0.000)))]
-    entries_max = entries[np.argmin(np.abs(cumsum - (0.5 + 0.341)))]
-
+    entries_min, entries_mid, entries_max = analysis_funcs.return_confidence_intervals(entries, cumsum)
+    
     print("%f (+%f)(-%f)" % (entries_mid, entries_mid - entries_min, entries_max - entries_mid))
 
     plt.figure()

@@ -4,15 +4,18 @@ import glob
 import scipy.interpolate
 import scipy.signal
 import copy
+import experiment
 
 
 def dbm(trace):
     return 10.0 * np.log10(np.square(np.abs(trace)) / 50.0 * 1e3) # 1e3 for mW
 
 
-Z0 = 120.0 * np.pi
-ZL = 50.0
-c = 0.3 # for ghz
+exper_constants = experiment.Experiment()
+
+exper_constants.Z0 = 120.0 * np.pi
+exper_constants.ZL = 50.0
+c = exper_constants.c / 1e9
 
 ####################
 # xFDTD Simulation #
@@ -31,8 +34,8 @@ lpda_gain_rl = gain_theta * (1.0 - np.square(np.abs(lpda_s11)))
 lpda_freqs = copy.deepcopy(gain_freqs)
 
 # my simuation results
-mine_h_rl = np.abs(np.sqrt(np.square(c / lpda_freqs) * (ZL / Z0) * (1.0 / (4.0 * np.pi)) * lpda_gain_rl))
-mine_h_rl *= np.sqrt(ZL / Z0)
+mine_h_rl = np.abs(np.sqrt(np.square(c / lpda_freqs) * (exper_constants.ZL / exper_constants.Z0) * (1.0 / (4.0 * np.pi)) * lpda_gain_rl))
+mine_h_rl *= np.sqrt(exper_constants.ZL / exper_constants.Z0)
 
 # going to upsample here a lot
 mine_h_rl = np.append(mine_h_rl, np.zeros(200000 - len(mine_h_rl)))
@@ -52,7 +55,7 @@ numc_phi = nuradiomc_sim['phi']
 f_numc = scipy.interpolate.interp1d(numc_ff, numc_phi,
                                    kind = 'linear', bounds_error = False, fill_value = 0.0)
 numc_h = f_numc(master_freqs)
-numc_h *= np.sqrt(ZL / Z0)
+numc_h *= np.sqrt(exper_constants.ZL / exper_constants.Z0)
                 
 ##############
 # FID pulser #
@@ -113,7 +116,7 @@ mine_signal = copy.deepcopy(fid_fft) # FID Voltage
 mine_signal *= mine_h_rl # tx antenna response
 mine_signal *= w # derivative from transmission
 mine_signal /= (2.0 * np.pi * c * r) # path loss
-mine_signal *= (Z0 / ZL)
+mine_signal *= (exper_constants.Z0 / exper_constants.ZL)
 mine_signal *= mine_h_rl # rx antenna response
 mine_signal *= amp_s21 # rx amplifier
 mine_signal *= lp_filter # LP filter
@@ -124,7 +127,7 @@ numc_signal = copy.deepcopy(fid_fft) # FID Voltage
 numc_signal *= numc_h # tx antenna response
 numc_signal *= w # derivative from transmission
 numc_signal /= (2.0 * np.pi * c * r) # path loss
-numc_signal *= (Z0 / ZL)
+numc_signal *= (exper_constants.Z0 / exper_constants.ZL)
 numc_signal *= numc_h # rx antenna response
 numc_signal *= amp_s21 # rx amplifier
 numc_signal *= lp_filter # LP filter
@@ -207,7 +210,7 @@ numc_signal *= numc_h # tx antenna response
 numc_signal *= w # derivative from transmission
 numc_signal *= 1.0j
 numc_signal /= (2.0 * np.pi * c * r) # path loss
-numc_signal *= (Z0 / ZL)
+numc_signal *= (exper_constants.Z0 / exper_constants.ZL)
 numc_signal[0] = 0.0
 numc_signal_time = np.fft.fftshift(np.fft.irfft(numc_signal))
 f_numc = scipy.interpolate.interp1d(master_times, numc_signal_time,
@@ -218,7 +221,7 @@ mine_signal *= mine_h_rl # tx antenna response
 mine_signal *= w # derivative from transmission
 numc_signal *= 1.0j
 mine_signal /= (2.0 * np.pi * c * r) # path loss
-mine_signal *= (Z0 / ZL)
+mine_signal *= (exper_constants.Z0 / exper_constants.ZL)
 mine_signal[0] = 0.0
 mine_signal_time = np.fft.fftshift(np.fft.irfft(mine_signal))
 f_mine = scipy.interpolate.interp1d(master_times, mine_signal_time,

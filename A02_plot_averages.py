@@ -1,23 +1,18 @@
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
+import analysis_funcs
+import experiment
 
 
 def load_and_plot(file_name, att_correction, title,
                   time_offset=0,
                   xlim=None, ylim=None, fig_size=None, save_name=None):
-    try:
-        data_ice = np.load(file_name)
-    except FileNotFoundError:
-        print("File not found: %s" % file_name)
-        return
 
-    data_t = data_ice["template_time"]
-    data_trace = data_ice["template_trace"]
-
-    data_t += time_offset
-    data_trace *= np.power(10.0, att_correction / 20.0)
-
+    data_t, data_trace = analysis_funcs.load_file(file_name,
+                                                  att_correction,
+                                                  time_offset)
+    
     if fig_size is None:
         plt.figure()
     else:
@@ -53,17 +48,10 @@ def load_and_plot_sliding_power(file_name, att_correction, title,
                                 time_offset=0,
                                 xlim=None, ylim=None, fig_size=None,
                                 save_name=None, window_length=250):
-    try:
-        data_ice = np.load(file_name)
-    except FileNotFoundError:
-        print("File not found: %s" % file_name)
-        return
 
-    data_t = data_ice["template_time"]
-    data_trace = data_ice["template_trace"]
-
-    data_t += time_offset
-    data_trace *= np.power(10.0, att_correction / 20.0)
+    data_t, data_trace = analysis_funcs.load_file(file_name,
+                                                  att_correction,
+                                                  time_offset)
 
     if fig_size is None:
         plt.figure()
@@ -109,21 +97,19 @@ def load_and_plot_sliding_power(file_name, att_correction, title,
 
 if __name__ == "__main__":
 
-    # correction to bring t0 to zero
-    # corrects for cable delays, ect.
-    time_offset = (35.55e-6 - 34.59e-6)
+    exper_constants = experiment.Experiment()
 
     load_and_plot("data_processed/averaged_in_ice_trace.npz",
-                  att_correction=0.0,
-                  time_offset=time_offset,
+                  att_correction=exper_constants.ice_att,
+                  time_offset=exper_constants.time_offset,
                   title="Ice Echo Data",
                   xlim=(-1.0, 40.0),
                   ylim=(-10.0, 10.0),
                   save_name="./plots/A02_plot_averages_inice_zoomed_out.png")
 
     load_and_plot("data_processed/averaged_in_ice_trace.npz",
-                  att_correction=0.0,
-                  time_offset=time_offset,
+                  att_correction=exper_constants.ice_att,
+                  time_offset=exper_constants.time_offset,
                   title="",
                   xlim=(10.0, 43.0),
                   ylim=(-1.0, 1.0),
@@ -131,8 +117,8 @@ if __name__ == "__main__":
                   save_name="./plots/A02_plot_averages_inice.png")
 
     load_and_plot("data_processed/averaged_in_ice_trace.npz",
-                  att_correction=0.0,
-                  time_offset=time_offset,
+                  att_correction=exper_constants.ice_att,
+                  time_offset=exper_constants.time_offset,
                   title="",
                   xlim=(34.0, 39.0),
                   ylim=(-0.75, 0.75),
@@ -140,8 +126,8 @@ if __name__ == "__main__":
                   save_name="./plots/A02_plot_averages_inice_ground_bounce.png")
 
     load_and_plot_sliding_power("data_processed/averaged_in_ice_trace.npz",
-                                att_correction=0.0,
-                                time_offset=time_offset,
+                                att_correction=exper_constants.ice_att,
+                                time_offset=exper_constants.time_offset,
                                 title="",
                                 xlim=(10.0, 43.0),
                                 ylim=(5e-7, 5e-4),
@@ -149,8 +135,8 @@ if __name__ == "__main__":
                                 save_name="./plots/A02_plot_averages_inice_integrated.png")
 
     load_and_plot_sliding_power("data_processed/averaged_in_ice_trace.npz",
-                                att_correction=0.0,
-                                time_offset=time_offset,
+                                att_correction=exper_constants.ice_att,
+                                time_offset=exper_constants.time_offset,
                                 title="",
                                 xlim=(34.0, 39.0),
                                 ylim=(5e-7, 5e-4),

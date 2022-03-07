@@ -4,6 +4,7 @@ import scipy.interpolate
 from scipy.stats import linregress
 from scipy.optimize import curve_fit
 from sklearn.decomposition import PCA
+import analysis_funcs
 
 
 def gaus_2d(X, sig_x, sig_y, rho, x0, y0):
@@ -59,21 +60,17 @@ def plot_fit(ms, bs, scale, n_freq_pts=100):
     fit_yerr_max = np.zeros(len(fit_x))
     for i_unique_freq, unique_freq in enumerate(fit_x):
         hist_entry = ms * unique_freq + bs
-        hist_entry_ = np.sort(hist_entry)
 
-        cumsum = np.cumsum(np.ones(len(hist_entry_)))
-        try:
-            cumsum = np.array(cumsum) / float(cumsum[-1])
-        except:
+        hist_entry_, cumsum = analysis_funcs.calculate_uncertainty(hist_entry)
+
+        if(len(cumsum) == 0):
             continue
 
-        cumsum_min = np.argmin(np.abs(cumsum - (0.5 - 0.341)))
-        cumsum_max = np.argmin(np.abs(cumsum - (0.5 + 0.341)))
-        cumsum_middle = np.argmin(np.abs(cumsum - 0.5))
+        entries_min, entries_mid, entries_max = analysis_funcs.return_confidence_intervals(hist_entry_, cumsum)
 
-        fit_y[i_unique_freq] = hist_entry_[cumsum_middle]
-        fit_yerr_min[i_unique_freq] = hist_entry_[cumsum_min]
-        fit_yerr_max[i_unique_freq] = hist_entry_[cumsum_max]
+        fit_y[i_unique_freq] = entries_mid
+        fit_yerr_min[i_unique_freq] = entries_min
+        fit_yerr_max[i_unique_freq] = entries_max
 
     plt.fill_between(fit_x * 1e-6,
                      fit_yerr_min * scale,

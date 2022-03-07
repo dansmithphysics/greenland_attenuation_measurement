@@ -3,6 +3,7 @@ import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
+import analysis_funcs
 
 
 def rho(z):
@@ -42,15 +43,6 @@ def get_average_n_of_top_1k():
     return n_avg_top_1k
 
 
-def calculate_uncertainty(entries):
-    entries = np.sort(entries)
-
-    cumsum = np.cumsum(np.ones(len(entries)))
-    cumsum = np.array(cumsum) / float(cumsum[-1])
-
-    return entries, cumsum
-
-
 if __name__ == "__main__":
 
     t0_from_data = 0.035e-6
@@ -62,15 +54,17 @@ if __name__ == "__main__":
 
     file_names = glob.glob("./data_processed/averaged_in_ice_trace_biref.npz")
 
-    data = np.load(file_names[0])
-    data_t = data['template_time']
-    data_trace = data['template_trace']
-
     # time corrections
-    data_t += prop_time_delay
-    data_t -= t0_from_data
-    data_t -= t_rx
+    time_offset = prop_time_delay - t0_from_data - t_rx
 
+    print(time_offset)
+    exit()
+    
+    data_t, data_trace = analysis_funcs.load_file(file_name=file_names[0],
+                                                  att_correction=0,
+                                                  time_offset=time_offset)
+                                   
+    
     data_power_mW = np.power(data_trace * 1e3, 2.0) / 50.0
     time_length = window_length * (data_t[1] - data_t[0]) * 1e9
 
@@ -144,12 +138,10 @@ if __name__ == "__main__":
         f = scipy.interpolate.interp1d(times, depths, kind='linear')
         entries[ithrow] = f(gb_t0)
 
-    entries, cumsum = calculate_uncertainty(entries)
+    entries, cumsum = analysis_funcs.calculate_uncertainty(entries)
 
-    entries_min = entries[np.argmin(np.abs(cumsum - (0.5 - 0.341)))]
-    entries_mid = entries[np.argmin(np.abs(cumsum - (0.5 - 0.000)))]
-    entries_max = entries[np.argmin(np.abs(cumsum - (0.5 + 0.341)))]
-
+    entries_min, entries_mid, entries_max = analysis_funcs.return_confidence_intervals(entries, cumsum)
+    
     print("%f (+%f)(-%f)" % (entries_mid,
                              entries_mid - entries_min,
                              entries_max - entries_mid))

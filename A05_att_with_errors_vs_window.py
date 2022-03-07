@@ -4,18 +4,8 @@ import scipy.signal
 import scipy.interpolate
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-def open_data(file_name, att_correction):
-    data = np.load(file_name)
-    time = data["template_time"]
-    trace = data["template_trace"]
-    fs = 1.0 / (time[1] - time[0])
-    trace *= np.power(10.0, att_correction / 20.0)
-    fft = np.fft.rfft(trace)
-    freq = np.fft.rfftfreq(len(trace), 1.0 / fs)
-
-    return time, trace, freq, fft, fs
+import analysis_funcs
+import experiment
 
 
 def prepare_ice_signal(t_gb, ice_time, ice_trace, master_time, Pxx_noise):
@@ -60,18 +50,21 @@ def calculate_att(T_ratio, R, focusing_factor,
     return att
 
 
-def perform_mc(t_gb, t_noise, gb_duration=5e-6,
-               nthrows=1000, time_offset=0.0):
+def perform_mc(exper_constants, nthrows=1000):               
 
     # Load up the data
-    ice_time, ice_trace, ice_freq, ice_fft, ice_fs = open_data("./data_processed/averaged_in_ice_trace.npz",
-                                                               att_correction=0.0)
-    air_time, air_trace, air_freq, air_fft, air_fs = open_data("./data_processed/averaged_in_air_trace.npz",
-                                                               att_correction=46.0)
+    ice_time, ice_trace, ice_freq, ice_fft, ice_fs = analysis_funcs.load_file("./data_processed/averaged_in_ice_trace.npz",
+                                                                              att_correction=exper_constants.ice_att,
+                                                                              time_offset=exper_constants.time_offset,
+                                                                              return_fft=True)
+    air_time, air_trace, air_freq, air_fft, air_fs = analysis_funcs.load_file("./data_processed/averaged_in_air_trace.npz",
+                                                                              att_correction=exper_constants.air_att,
+                                                                              time_offset=exper_constants.time_offset,
+                                                                              return_fft=True)
 
     # Define a master time close,
     # based on the ice_data time steps.
-    master_time = np.arange(gb_duration * ice_fs) / ice_fs
+    master_time = np.arange(exper_constants.gb_duration * ice_fs) / ice_fs
     master_freq = np.fft.rfftfreq(len(master_time), 1.0 / ice_fs)
 
     air_f = scipy.interpolate.interp1d(air_time, air_trace,
@@ -86,9 +79,8 @@ def perform_mc(t_gb, t_noise, gb_duration=5e-6,
     Pxx_air = np.abs(np.square(np.fft.rfft(air_trace)))
     freqs = copy.deepcopy(master_freq)
 
-    t0_noise, t1_noise = t_noise
-    noise = ice_trace[np.logical_and(ice_time > t0_noise,
-                                     ice_time < t1_noise)]
+    noise = ice_trace[np.logical_and(ice_time > exper_constants.noise_start,
+                                     ice_time < exper_constants.noise_end)]
 
     noise_fft = np.fft.rfft(noise)
     noise_freq = copy.deepcopy(ice_freq)
@@ -101,34 +93,34 @@ def perform_mc(t_gb, t_noise, gb_duration=5e-6,
                                          bounds_error=False,
                                          fill_value=0.0)
     Pxx_noise = f_noise(master_freq)
-    Pxx_noise /= (t1_noise - t0_noise)
+    Pxx_noise /= (exper_constants.noise_end - exper_constants.noise_start)
 
-    # Correct to absolute time
-    ice_time += time_offset
-    Pxx_ice = prepare_ice_signal(t_gb,
+    Pxx_ice = prepare_ice_signal((exper_constants.gb_start, exper_constants.gb_end),
                                  ice_time,
                                  ice_trace,
                                  master_time,
                                  Pxx_noise)
 
-    # t0 = 35.55
-    # t1 = 36.05
-    # R E (0.1, 1.0) uniform in log
-    # focusing_factor = 1.61 +/- 0.24
-    # ice_prop = 6008.0 +/- 100.0
-    # air_prop = 244.0 +/- 1.0
-    # T_Ratio = 1.05 +/- 0.05
-
-    R_ = np.random.uniform(np.log10(0.1), np.log10(1.0), nthrows)
-    R_ = np.power(10.0, R_)
-    focusing_factor_ = np.random.normal(1.61, 0.24, nthrows)
-    ice_prop = np.random.normal(6008.0, 100.0, nthrows)
-    air_prop = np.random.normal(244.0, 1.0, nthrows)
-    T_ratio = np.random.normal(1.00, 0.05, nthrows)
-
     #######################
     # Starting the toy MC #
     #######################
+    
+    R_ = np.random.uniform(np.log10(exper_constants.m_R_low),
+                           np.log10(exper_constants.m_R_high),
+                           nthrows)
+    R_ = np.power(10.0, R_)
+    focusing_factor_ = np.random.normal(exper_constants.m_ff,
+                                        exper_constants.m_ff_uncert,
+                                        nthrows)
+    ice_prop = np.random.normal(exper_constants.m_depth,
+                                exper_constants.m_depth_uncert,
+                                nthrows)
+    air_prop = np.random.normal(exper_constants.m_air_prop,
+                                exper_constants.m_air_prop_uncert,
+                                nthrows)
+    T_ratio = np.random.normal(exper_constants.m_T_ratio,
+                               exper_constants.m_T_ratio_uncert,
+                               nthrows)
 
     atts = np.zeros((nthrows, len(Pxx_air)))
 
@@ -146,16 +138,13 @@ def perform_mc(t_gb, t_noise, gb_duration=5e-6,
     return freqs, atts
 
 
-def main(nthrows=1000, t_gb=(35.55e-6, 36.05e-6)):
+def main(nthrows=1000, gb_end=36.05e-6):
 
-    t_noise = (22.0e-6, 34.0e-6)  # Seconds
+    exper_constants = experiment.Experiment()
+    exper_constants.gb_end = gb_end
 
-    time_offset = (35.55e-6 - 34.59e-6)  # Seconds
-
-    att_freqs, atts = perform_mc(t_gb=t_gb,
-                                 t_noise=t_noise,
-                                 nthrows=nthrows,
-                                 time_offset=time_offset)
+    att_freqs, atts = perform_mc(exper_constants,
+                                 nthrows=nthrows)
 
     new_freqs = np.linspace(150e6, 566.6666e6, 26)
 
@@ -214,15 +203,12 @@ if __name__ == "__main__":
     vals_min = np.zeros(len(end_times))
     vals_max = np.zeros(len(end_times))
 
-    freq_select = 2  # 200 MHz
+    freq_select = 3  # 200 MHz
 
     for i_end_time, end_time in enumerate(end_times):
         print(start_time, end_time, end_time-start_time)
 
-        t_gb = (start_time, end_time)  # Seconds
-
-        freqs, low_bound, high_bound, middle_val = main(nthrows=1000,
-                                                        t_gb=t_gb)
+        freqs, low_bound, high_bound, middle_val = main(nthrows=1000, gb_end=end_time)
 
         vals[i_end_time] = middle_val[freq_select]
         vals_min[i_end_time] = low_bound[freq_select]
@@ -233,14 +219,14 @@ if __name__ == "__main__":
     plt.plot((end_times[vals_min != 0] - start_time) / 1e-6,
              vals[vals_min != 0],
              color='red')
-
+    '''
     plt.fill_between((end_times[vals_min != 0] - start_time) / 1e-6,
                      vals_min[vals_min != 0],
                      vals_max[vals_min != 0],
                      color='red',
                      alpha=0.5,
                      label="Modified Time Window Result, 1 $\sigma$ Errors")
-
+    '''
     plt.fill_between((end_times - start_time) / 1e-6,
                      vals_min,
                      vals_max,

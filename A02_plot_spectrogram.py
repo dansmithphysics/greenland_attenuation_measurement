@@ -2,22 +2,8 @@ import glob
 import scipy.signal
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-def load(file_name, att_correction, time_offset):
-    try:
-        data_ice = np.load(file_name)
-    except FileNotFoundError:
-        print("File not found: %s" % file_name)
-        return
-
-    data_t = data_ice["template_time"]
-    data_trace = data_ice["template_trace"]
-
-    data_t += time_offset
-    data_trace *= np.power(10.0, att_correction / 20.0)
-
-    return data_t, data_trace
+import analysis_funcs
+import experiment
 
 
 if __name__ == "__main__":
@@ -26,9 +12,11 @@ if __name__ == "__main__":
     # corrects for cable delays, ect.
     time_offset = (35.55e-6 - 34.59e-6)
 
-    data_time, data_trace = load("data_processed/averaged_in_ice_trace.npz",
-                                 att_correction=0.0,
-                                 time_offset=time_offset)
+    exper_constants = experiment.Experiment()
+    
+    data_time, data_trace = analysis_funcs.load_file("data_processed/averaged_in_ice_trace.npz",
+                                                     att_correction=exper_constants.ice_att,
+                                                     time_offset=exper_constants.time_offset)
 
     fs = 1.0 / (data_time[1] - data_time[0]) / 1e6
     window_length = 1000
