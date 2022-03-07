@@ -24,7 +24,7 @@ For the conversion of bulk attenuation to attenuation at any given depth, the te
 
 ## Analysis Scripts
 
-The analysis code is roughly arranged in sequential scripts that prepare data (`A01`), plot results (`A02`), and calculate systematic uncertainties and biases (`A03` and `A04`) before calculating the bulk attenuation (`A05`) and plotting the figures in the paper (`A06`). A description of each script is below.
+The analysis code is roughly arranged in sequential scripts that prepare data (`A01`), plot results (`A02`), and calculate systematic uncertainties (`A03`) and biases (`A04`) before calculating the bulk attenuation (`A05`) and plotting the figures in the paper (`A06`). A description of each script is below.
 
 ### A01_average_and_convert.py
 
@@ -72,7 +72,7 @@ Calculates and plots the bulk attenuation at 200 MHz as a function of window len
 
 ### A06_plot_att.py
 
-Processes the output of `A05_att_with_errors.py` to create the attenuation plots from the paper, Fig. 6 and Fig. 7 from the paper. Calculations include calculating the uncertainty on the linear fit to create the final fit confidence interval. The bulk attenuation is converted to the average attenution of the top 1500 m of the ice by scaling the bulk result by a factor of `~1.20`, determined by the script `A06_plot_att_vs_temperature.py` to be an appropriate correction to convert between the two. 
+Processes the output of `A05_att_with_errors.py` to create the attenuation Fig. 6 and Fig. 7 from the paper. Calculations include calculating the uncertainty on the linear fit to create the final fit confidence interval. The bulk attenuation is converted to the average attenution of the top 1500 m of the ice by scaling the bulk result by a factor of `~1.20`, determined by the script `A06_plot_att_vs_temperature.py` to be an appropriate correction to convert between the two. 
 
 ### A06_plot_att_vs_temperature.py
 
