@@ -83,7 +83,7 @@ if __name__ == "__main__":
     plt.xlabel(r"Absolute Time Since Pulser [$\mu$s]")
     plt.ylabel("Integrated Power [mW ns]")
     plt.xlim(33.0, 38.0)
-    plt.ylim(1e-9, 1e-6)
+    plt.ylim(1e-7, 1e-4)
 
     x_ticks = np.arange(33, 39, 1)
     x_ticks = np.append(x_ticks,

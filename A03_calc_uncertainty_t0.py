@@ -82,7 +82,7 @@ if __name__ == "__main__":
     plt.xlabel("Time Since Trigger $t_0$ [$\mu$s]")
     plt.ylabel("Integrated Power [mW ns]")
     plt.xlim(34.0, 39.0)
-    plt.ylim(4e-9, 4e-5)
+    plt.ylim(4e-7, 4e-4)
     plt.legend(loc='upper right')
     plt.grid()
 

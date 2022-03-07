@@ -51,12 +51,12 @@ def power_integration(time, trace, window_length=250):
     """
     
     data_power_mW = np.power(trace, 2.0) / 50.0 * 1e3
-
-    time_length = window_length * (time[1] - time[0]) * 1e9
+    delta_t = (time[1] - time[0]) * 1e9
+    time_length = window_length * delta_t
 
     window = scipy.signal.windows.tukey(window_length, alpha=0.25)
 
-    rolling = np.convolve(data_power_mW / time_length,
+    rolling = np.convolve(data_power_mW * delta_t,
                           window,
                           'valid')
 

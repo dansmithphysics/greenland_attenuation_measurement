@@ -120,10 +120,6 @@ for i_selection in range(len(selections)):
         print("Ratio is:", (np.mean(As_middle[i] * att(m, depths[depths < 1500.0])) /
                             np.mean(As_middle[i] * att(m, depths))))
 
-        ax.axhline(result_middle_val[i] * 1.1997683538791095)
-
-        ax.axhline(np.mean(L_x_middle[depths < 1500.0]), linestyle="--")
-
         ax.fill_between(depths,
                         L_x_high,
                         L_x_low,
