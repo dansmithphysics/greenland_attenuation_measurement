@@ -1,8 +1,9 @@
 import numpy as np
 import scipy.constants
 
+
 class Experiment:
-    
+
     def __init__(self):
 
         self.Z0 = 120.0 * np.pi  # Ohms
@@ -20,7 +21,7 @@ class Experiment:
         # ice_prop = 6008.0 +/- 100.0
         # air_prop = 244.0 +/- 1.0
         # T_Ratio = 1.05 +/- 0.05
-    
+
         self.gb_start = 35.55e-6  # Seconds
         self.gb_end = 36.05e-6  # Seconds
         self.noise_start = 22.0e-6  # Seconds
