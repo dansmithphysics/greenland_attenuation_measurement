@@ -26,6 +26,8 @@ For the conversion of bulk attenuation to attenuation at any given depth, the te
 
 The analysis code is roughly arranged in sequential scripts that prepare data (`A01`), plot results (`A02`), and calculate systematic uncertainties (`A03`) and biases (`A04`) before calculating the bulk attenuation (`A05`) and plotting the figures in the paper (`A06`). A description of each script is below.
 
+All scripts were built in Python 3.9.5.
+
 ### A01_average_and_convert.py
 
 Loads the raw data from the oscilliscope and converts it into Numpy's pickled format `.npy`.
