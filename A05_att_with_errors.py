@@ -50,7 +50,7 @@ def calculate_att(T_ratio, R, focusing_factor,
     return att
 
 
-def perform_mc(exper_constants, nthrows=1000):               
+def perform_mc(exper_constants, nthrows=1000):
 
     # Load up the data
     ice_time, ice_trace, ice_freq, ice_fft, ice_fs = analysis_funcs.load_file("./data_processed/averaged_in_ice_trace.npz",
@@ -104,7 +104,7 @@ def perform_mc(exper_constants, nthrows=1000):
     #######################
     # Starting the toy MC #
     #######################
-    
+
     R_ = np.random.uniform(np.log10(exper_constants.m_R_low),
                            np.log10(exper_constants.m_R_high),
                            nthrows)
@@ -182,7 +182,7 @@ def main():
         atts_ = atts[:, selection_region].flatten()
 
         atts_, cumsum = analysis_funcs.calculate_uncertainty(atts_)
-        
+
         # Center of bin
         freqs[i_unique_freq] = (new_freqs[i_unique_freq] +
                                 new_freqs[i_unique_freq + 1]) / 2.0
@@ -198,7 +198,7 @@ def main():
             high_bound[i_unique_freq] = atts_[cumsum_max]
         else:
             entries_min, entries_mid, entries_max = analysis_funcs.return_confidence_intervals(atts_, cumsum)
-            
+
             middle_val[i_unique_freq] = entries_mid
             low_bound[i_unique_freq] = entries_min
             high_bound[i_unique_freq] = entries_max

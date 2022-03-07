@@ -50,7 +50,7 @@ def calculate_att(T_ratio, R, focusing_factor,
     return att
 
 
-def perform_mc(exper_constants, nthrows=1000):               
+def perform_mc(exper_constants, nthrows=1000):
 
     # Load up the data
     ice_time, ice_trace, ice_freq, ice_fft, ice_fs = analysis_funcs.load_file("./data_processed/averaged_in_ice_trace.npz",
@@ -104,7 +104,7 @@ def perform_mc(exper_constants, nthrows=1000):
     #######################
     # Starting the toy MC #
     #######################
-    
+
     R_ = np.random.uniform(np.log10(exper_constants.m_R_low),
                            np.log10(exper_constants.m_R_high),
                            nthrows)

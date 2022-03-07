@@ -8,15 +8,14 @@ import experiment
 
 if __name__ == "__main__":
 
-    exper_constants = experiment.Experiment()    
-    
+    exper_constants = experiment.Experiment()
+
     window_length = 250
 
     data_t, data_trace = analysis_funcs.load_file(file_name="./data_processed/averaged_in_ice_trace.npz",
                                                   att_correction=exper_constants.ice_att,
                                                   time_offset=exper_constants.time_offset)
 
-    
     #####################
     #      Raw Data     #
     #####################
@@ -62,7 +61,7 @@ if __name__ == "__main__":
                                    rolling_t < exper_constants.noise_end)]
 
     noise, cumsum = analysis_funcs.calculate_uncertainty(noise)
-    
+
     noise_threshold = noise[np.argmin(np.abs(cumsum - 0.95))]
 
     plt.figure()

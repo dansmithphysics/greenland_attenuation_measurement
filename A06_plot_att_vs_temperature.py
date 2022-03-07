@@ -19,7 +19,7 @@ data_depth, data_temp = np.loadtxt("./data_raw/griptemp.txt",
                                    delimiter="\t")
 
 f_temp_of_depth = scipy.interpolate.interp1d(data_depth,
-                                             data_temp, 
+                                             data_temp,
                                              kind='linear',
                                              bounds_error=False,
                                              fill_value='extrapolate')
@@ -48,14 +48,16 @@ slope, intercept, r_value, p_value, std_err = linregress(data_temp_sum, np.log10
 # The above equation is not true, it must be the harmonic mean,
 # not the arithmetic mean
 
+
 def att(m, depth):
     return np.power(10.0, m * f_temp_of_depth(depth))
+
 
 nsteps = 100000
 
 m = slope
-depth = 0.0 # m
-ddepth = 0.1 # m
+depth = 0.0  # m
+ddepth = 0.1  # m
 
 int_L = att(m, depth)
 
@@ -71,7 +73,6 @@ for step in range(nsteps):
 
 avg_L_calc = depth / int_L
 
-#selection_region = np.logical_and(result_freqs > 140e6, result_freqs < 500e6)
 selection_region = np.logical_and(result_freqs > 10e6, result_freqs < 500e6)
 att_targets_middle = result_middle_val[selection_region]
 att_targets_high = result_high_bound[selection_region]
@@ -111,7 +112,7 @@ for i_selection in range(len(selections)):
     for i, A in enumerate(As_middle):
         if(i != selections[i_selection]):
             continue
-        
+
         L_x_middle = As_middle[i] * att(m, depths)
         L_x_high = As_high[i] * att(m, depths)
         L_x_low = As_low[i] * att(m, depths)
@@ -122,7 +123,7 @@ for i_selection in range(len(selections)):
         ax.axhline(result_middle_val[i] * 1.1997683538791095)
 
         ax.axhline(np.mean(L_x_middle[depths < 1500.0]), linestyle="--")
-        
+
         ax.fill_between(depths,
                         L_x_high,
                         L_x_low,
@@ -143,4 +144,3 @@ plt.savefig("./plots/A06_plot_att_vs_temperature_result.png",
             dpi=300)
 
 plt.show()
-

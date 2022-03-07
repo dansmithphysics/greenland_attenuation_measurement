@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     # Time corrections.
     # I don't use the time offset as calculated in exper_constants
-    # because this is a different, more accurate experimental setup.    
+    # because this is a different, more accurate experimental setup.
     t0_from_data = 0.035e-6
     t_tx = 74.2e-9
     t_rx = 74.5e-9
@@ -60,13 +60,13 @@ if __name__ == "__main__":
     window_length = 250
 
     file_names = glob.glob("./data_processed/averaged_in_ice_trace_biref.npz")
-    
+
     data_t, data_trace = analysis_funcs.load_file(file_name=file_names[0],
                                                   att_correction=0,
                                                   time_offset=time_offset)
 
     data_t, rolling = analysis_funcs.power_integration(data_t, data_trace, window_length)
-    
+
     noise = rolling[np.logical_and(data_t > 25.0e-6, data_t < 32.0e-6)]
 
     entries, cumsum = analysis_funcs.calculate_uncertainty(np.abs(noise))
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     entries, cumsum = analysis_funcs.calculate_uncertainty(entries)
 
     entries_min, entries_mid, entries_max = analysis_funcs.return_confidence_intervals(entries, cumsum)
-    
+
     print("%f (+%f)(-%f)" % (entries_mid,
                              entries_mid - entries_min,
                              entries_max - entries_mid))

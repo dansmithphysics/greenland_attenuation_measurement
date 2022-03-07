@@ -12,7 +12,7 @@ def load_and_plot(file_name, att_correction, title,
     data_t, data_trace = analysis_funcs.load_file(file_name,
                                                   att_correction,
                                                   time_offset)
-    
+
     if fig_size is None:
         plt.figure()
     else:
@@ -61,7 +61,7 @@ def load_and_plot_sliding_power(file_name, att_correction, title,
     plt.tight_layout()
 
     data_t, rolling = analysis_funcs.power_integration(data_t, data_trace, window_length)
-        
+
     plt.title(title)
     plt.semilogy(data_t * 1e6, rolling,
                  alpha=1.0, color='black', linewidth=1.0)

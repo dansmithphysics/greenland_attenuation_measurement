@@ -23,7 +23,7 @@ def load_s11_files(file_names):
 if __name__ == "__main__":
 
     air_file_names = glob.glob("./data_raw/LPDA_Summit_Measurements/*AIR*LPDA*S11*csv")
-    ice_file_names = glob.glob("./data_raw/LPDA_Summit_Measurements/*ICE*LPDA*S11*csv")    
+    ice_file_names = glob.glob("./data_raw/LPDA_Summit_Measurements/*ICE*LPDA*S11*csv")
     file_names = np.append(air_file_names, ice_file_names)
 
     freqs, s11s = load_s11_files(file_names)
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     entries, cumsum = analysis_funcs.calculate_uncertainty(entries)
 
     entries_min, entries_mid, entries_max = analysis_funcs.return_confidence_intervals(entries, cumsum)
-    
+
     print("%f (+%f)(-%f)" % (entries_mid, entries_mid - entries_min, entries_max - entries_mid))
 
     plt.figure()
