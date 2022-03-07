@@ -1,5 +1,8 @@
-# greenland_ground_bounce
-Analysis code for radio echo data collected in Greenland, Summer 2021
+# Bulk Attenuation Measurement at Summit Station, Greenland.
+
+Analysis code for the * *in situ* * broadband measurement of the radio frequency attenuation length at Summit Station, Greenland. The data was collected by Dan Smith, Bryan Hendricks and Christoph Welling in Summer 2021 for the RNO-G collaboration. As of March 2022, the results are in a paper out for review in the Journal of Glaciology.
+
+* *In situ* *, broadband measurement of the radio frequency attenuation length at Summit Station, Greenland, J.A. Aguilar * *et al.* * e-Print: [2201.07846](https://arxiv.org/abs/2201.07846) [astro-ph.IM]
 
 ## Data
 
@@ -45,13 +48,24 @@ Calculates the focusing factor and associated uncertainty using a few different 
 
 ### A04_calc_systematic_air_normalization.py
 
+Plots the absolute response of the air-to-air path to determine if there are any substantial systematic bias from reflections. There are nonw. This script creats Fig. 5 from the paper. 
+
 ### A04_plot_lpda_simulations.py
+
+Plots the NuRadioMC simulation in several formats to determine if there is an appreciable shift in gain from in-air to in-ice simulations. There are none. Outputs a gain figure for the simulations in ice and in air, saved [here](./plots/A04_gain_ice_vs_air.png), and an effective height figure, saved [here](./plots/A04_effective_height_ice_vs_air.png).
 
 ### A05_att_with_errors.py
 
+Calculates the bulk attenuation using a Toy MC method to determine the statistical uncertainty of each frequency bin. Outputs to a file named `/data_processed/A05_mc_results.npz` which includes the slopes (`ms`) and intercepts (`bs`) of the linear fit for each Toy MC iteration, the frequencies where attenuation is calculated (`freqs`), and the lower, central, and upper bounds of the attenuation (`low_bound`, `middle_val`, and `high_bound` respectively). 
+
 ### A05_att_with_errors_vs_window.py
+
+Calculates and plots the bulk attenuation at 200 MHz as a function of window length, creating Fig. 3 from the paper. Note that the result is slightly different than the paper for yet undetermined reason. The most likely cause is a slight change in noise contribution definition which does not change the mean value of measurement but does change the lower bound. 
 
 ### A06_plot_att.py
 
+Processes the output of `A05_att_with_errors.py` to create the attenuation plots from the paper, Fig. 6 and Fig. 7 from the paper. Calculations include calculating the uncertainty on the linear fit to create the final fit confidence interval. The bulk attenuation is converted to the average attenution of the top 1500 m of the ice by scaling the bulk result by a factor of `1.12`, determined by the script `A06_plot_att_vs_temperature.py` to be an appropriate correction to convert between the two. 
+
 ### A06_plot_att_vs_temperature.py
 
+Converts the bulk attenuation into an attenuation as function of depth via the process described in the paper in the section named **Discussion and Summary** and in Eq. 8. Creates Fig. 8 from the paper, the attenuation vs. depth at 150 and 330 MHz.

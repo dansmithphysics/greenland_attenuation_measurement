@@ -45,16 +45,23 @@ plt.xlabel("Freq. [GHz]")
 plt.ylabel("Realized Gain [dB]")
 plt.grid()
 plt.legend()
+plt.savefig("./plots/A04_gain_ice_vs_air.png",
+            dpi=300)
+
 
 numc_air *= np.sqrt(ZL / Z0)
 numc_ice *= np.sqrt(ZL / Z0)
 plt.figure()
-plt.plot(numc_ff * 1e3, np.abs(numc_ice))
-plt.plot(numc_ff * 1e3, np.abs(numc_air))
+plt.plot(numc_ff * 1e3, np.abs(numc_air),
+         color='purple', label="In Air")
+plt.plot(numc_ff * 1e3, np.abs(numc_ice),
+         color='blue', label="In Ice")
 plt.xlim(0.0, 1e3)
 plt.xlabel("Freq. [MHz]")
 plt.ylabel("Effective Height [m]")
 plt.grid()
+plt.savefig("./plots/A04_effective_height_ice_vs_air.png",
+            dpi=300)
 
 
 # for the ratio, to calculate the systematic, we are doing the ratio of Voltages
@@ -69,8 +76,5 @@ plt.ylim(0.0, 1.2)
 plt.xlabel("Freq. [MHz]")
 plt.ylabel("Simulated In-Ice Voltage over In-Air Voltage")
 plt.grid()
-
-plt.savefig("./plots/A04_calc_systematic_gain.png",
-            dpi=300)
 
 plt.show()
