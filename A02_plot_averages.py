@@ -60,19 +60,8 @@ def load_and_plot_sliding_power(file_name, att_correction, title,
 
     plt.tight_layout()
 
-    data_power_mW = np.power(data_trace, 2.0) / 50.0 * 1e3
-    delta_t = (data_t[1] - data_t[0]) * 1e9
-    time_length = window_length * delta_t
-
-    rolling = np.convolve(data_power_mW * delta_t,
-                          np.ones(window_length),
-                          'valid')
-
-    # rolling is the integrated sliding window result and has units of mW * ns
-
-    data_t = (data_t[(window_length - 1):]
-              + data_t[:-(window_length - 1)]) / 2.0
-
+    data_t, rolling = analysis_funcs.power_integration(data_t, data_trace, window_length)
+        
     plt.title(title)
     plt.semilogy(data_t * 1e6, rolling,
                  alpha=1.0, color='black', linewidth=1.0)

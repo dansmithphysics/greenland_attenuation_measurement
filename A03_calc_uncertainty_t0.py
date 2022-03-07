@@ -6,20 +6,6 @@ import analysis_funcs
 import experiment
 
 
-def integrated_window(data_trace, data_t):
-    data_power_mW = np.power(data_trace * 1e3, 2.0) / 50.0
-    time_length = window_length * (data_t[1] - data_t[0]) * 1e9
-    window = scipy.signal.windows.tukey(window_length, alpha=0.25)
-
-    rolling = np.convolve(data_power_mW / time_length,
-                          window,
-                          'valid')
-
-    rolling_t = (data_t[(window_length - 1):] + data_t[:-(window_length - 1)]) / 2.0
-
-    return rolling_t, rolling
-
-
 if __name__ == "__main__":
 
     exper_constants = experiment.Experiment()    
@@ -69,7 +55,7 @@ if __name__ == "__main__":
     # Integrated Window #
     #####################
 
-    rolling_t, rolling = integrated_window(data_trace, data_t)
+    rolling_t, rolling = analysis_funcs.power_integration(data_t, data_trace, window_length)
 
     # Calculate a 95% CI of noise.
     noise = rolling[np.logical_and(rolling_t > exper_constants.noise_start,
@@ -95,9 +81,9 @@ if __name__ == "__main__":
                 linestyle="-.",
                 label="End of G.B.")
     plt.xlabel("Time Since Trigger $t_0$ [$\mu$s]")
-    plt.ylabel("Integrated Power [mW / ns]")
+    plt.ylabel("Integrated Power [mW ns]")
     plt.xlim(34.0, 39.0)
-    plt.ylim(4e-6, 4e-2)
+    plt.ylim(4e-9, 4e-5)
     plt.legend(loc='upper right')
     plt.grid()
 

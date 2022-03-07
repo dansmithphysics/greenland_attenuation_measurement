@@ -45,6 +45,16 @@ if(__name__ == "__main__"):
              template_trace=template_trace)
 
     ###########################################
+    # Data collected for Biref, unhealthy FID #
+    ###########################################
+
+    file_names = glob.glob("./data_raw/2021_08_09_biref_*/*_Ch1.csv")
+    template_time, template_trace = load_templates(file_names)
+    np.savez("./data_processed/averaged_in_ice_trace_biref",
+             template_time=template_time,
+             template_trace=template_trace)
+
+    ###########################################
     # Data collected with healthy FID, in air #
     ###########################################
 

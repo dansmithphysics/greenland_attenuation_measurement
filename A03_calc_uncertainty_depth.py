@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
 import analysis_funcs
+import experiment
 
 
 def rho(z):
@@ -45,59 +46,48 @@ def get_average_n_of_top_1k():
 
 if __name__ == "__main__":
 
+    exper_constants = experiment.Experiment()
+
+    # Time corrections.
+    # I don't use the time offset as calculated in exper_constants
+    # because this is a different, more accurate experimental setup.    
     t0_from_data = 0.035e-6
     t_tx = 74.2e-9
     t_rx = 74.5e-9
     prop_time_delay = 8.0 / 3e8  # measured by eye
+    time_offset = prop_time_delay - t0_from_data - t_rx
 
     window_length = 250
 
     file_names = glob.glob("./data_processed/averaged_in_ice_trace_biref.npz")
-
-    # time corrections
-    time_offset = prop_time_delay - t0_from_data - t_rx
-
-    print(time_offset)
-    exit()
     
     data_t, data_trace = analysis_funcs.load_file(file_name=file_names[0],
                                                   att_correction=0,
                                                   time_offset=time_offset)
-                                   
+
+    data_t, rolling = analysis_funcs.power_integration(data_t, data_trace, window_length)
     
-    data_power_mW = np.power(data_trace * 1e3, 2.0) / 50.0
-    time_length = window_length * (data_t[1] - data_t[0]) * 1e9
-
-    window = scipy.signal.windows.tukey(window_length, alpha=0.25)
-
-    rolling = np.convolve(data_power_mW / time_length,
-                          window,
-                          'valid')
-
-    data_t = (data_t[(window_length - 1):] + data_t[:-(window_length - 1)]) / 2.0
-
     noise = rolling[np.logical_and(data_t > 25.0e-6, data_t < 32.0e-6)]
 
-    entries = np.sort(copy.deepcopy(np.abs(noise)))
-    cumsum = np.cumsum(np.ones(len(entries)))
-    cumsum = np.array(cumsum) / float(cumsum[-1])
+    entries, cumsum = analysis_funcs.calculate_uncertainty(np.abs(noise))
     threshold = entries[np.argmin(np.abs(cumsum - 0.95))]
 
     plt.figure()
     plt.semilogy(data_t * 1e6, rolling,
                  color='black', linewidth=1.0)
-    plt.axvline(35.57, color='purple', alpha=0.85, label="Arrival of Bedrock Echo")
+    plt.axvline(exper_constants.gb_start * 1e6, color='purple', alpha=0.85, label="Arrival of Bedrock Echo")
     plt.axhline(threshold, color='red', linestyle="--", label="95% CI of Noise")
 
     plt.grid()
     plt.title("Ice Echo Data From Bed Rock, Integrated in Sliding 100 ns Window \n From Birefringence Data Run")
     plt.xlabel(r"Absolute Time Since Pulser [$\mu$s]")
-    plt.ylabel("Integrated Power [mW / ns]")
+    plt.ylabel("Integrated Power [mW ns]")
     plt.xlim(33.0, 38.0)
-    plt.ylim(1e-6, 1e-3)
+    plt.ylim(1e-9, 1e-6)
 
     x_ticks = np.arange(33, 39, 1)
-    x_ticks = np.append(x_ticks, 35.57)
+    x_ticks = np.append(x_ticks,
+                        exper_constants.gb_start * 1e6)
     x_ticks = np.sort(x_ticks)
     x_tick_labels = [str(int(tick)) if int(tick) == tick else str(tick) for tick in x_ticks]
     plt.xticks(x_ticks, x_tick_labels)
@@ -115,8 +105,6 @@ if __name__ == "__main__":
     #######################################################################
 
     nthrows = 10000
-    gb_t0 = 35.55e-6
-    c = 3.0e8
 
     # get average index of refraction
     n_avg_top_1k = get_average_n_of_top_1k()
@@ -134,9 +122,9 @@ if __name__ == "__main__":
     depths = np.linspace(2600.0, 3400.0, 1000)
     for ithrow in np.arange(nthrows):
         n_with_uncertainty = np.random.normal(calculate_n(n_avg_top_1k, depths), 0.03)
-        times = (2.0 * depths) * (n_with_uncertainty / c)
+        times = (2.0 * depths) * (n_with_uncertainty / exper_constants.c)
         f = scipy.interpolate.interp1d(times, depths, kind='linear')
-        entries[ithrow] = f(gb_t0)
+        entries[ithrow] = f(exper_constants.gb_start)
 
     entries, cumsum = analysis_funcs.calculate_uncertainty(entries)
 

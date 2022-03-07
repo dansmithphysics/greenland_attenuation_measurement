@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import analysis_funcs
 import experiment
 
+
 def prepare_ice_signal(t_gb, ice_time, ice_trace, master_time, Pxx_noise):
 
     t0, t1 = t_gb

@@ -16,6 +16,7 @@ The data taken in the field is available from the RNO-G wiki. The three data sou
 * [In air data](https://radio.uchicago.edu/wiki/images/f/fd/Groundbounce_in_air_data_46dB_2021_08_02.zip)
 * [LPDA S11 Measurement](https://radio.uchicago.edu/wiki/images/2/28/LPDA_Summit_Measurements.zip)
 * [FID pulser output](https://radio.uchicago.edu/wiki/images/d/da/Groundbounce_fid_pulser_after_sick_72db.zip)
+* [Data for the Birefringence Setup](https://radio.uchicago.edu/wiki/images/5/5c/Biref_run1_0deg.zip)
 
 Simulations are also required. The simulations performed on xFDTD are not yet documented elsewhere so are included in this repository [here](data_simulated/lpda_xfdtd_sims/). The simulations performed in NuRadioMC are available [here for the in air simulation](http://arianna.ps.uci.edu/~arianna/data/AntennaModels/createLPDA_100MHz_InfAir/) and [here for the in ice simulation](http://arianna.ps.uci.edu/~arianna/data/AntennaModels/createLPDA_100MHz_InfFirn_n1.4/), and are documented [here](https://github.com/nu-radio/NuRadioReco/wiki/Antenna-models). 
 
@@ -28,6 +29,10 @@ For the conversion of bulk attenuation to attenuation at any given depth, the te
 The analysis code is roughly arranged in sequential scripts that prepare data (`A01`), plot results (`A02`), and calculate systematic uncertainties (`A03`) and biases (`A04`) before calculating the bulk attenuation (`A05`) and plotting the figures in the paper (`A06`). A description of each script is below.
 
 All scripts were built in Python 3.9.5.
+
+### experiment.py
+
+Class storing hardcoded numbers from the experiment, including the time of the ground bounce and uncertainties used in the attenuation measurement.
 
 ### A01_average_and_convert.py
 
@@ -81,3 +86,6 @@ Processes the output of `A05_att_with_errors.py` to create the attenuation Fig. 
 
 Converts the bulk attenuation into an attenuation as function of depth via the process described in the paper in the section named **Discussion and Summary** and in Eq. 8. Creates Fig. 8 from the paper, the attenuation vs. depth at 150 and 330 MHz.
 
+### analysis_funcs.py
+
+Collection of functions used in more than one analysis script. 

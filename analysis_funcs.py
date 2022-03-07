@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.signal
 
 
 def load_file(file_name, att_correction=0, time_offset=0, return_fft=False):
@@ -33,6 +34,23 @@ def calculate_uncertainty(entries):
         cumsum = cumsum / float(cumsum[-1])
 
     return entries, cumsum
+
+
+def power_integration(time, trace, window_length):
+    
+    data_power_mW = np.power(trace, 2.0) / 50.0 * 1e3
+
+    time_length = window_length * (time[1] - time[0]) * 1e9
+
+    window = scipy.signal.windows.tukey(window_length, alpha=0.25)
+
+    rolling = np.convolve(data_power_mW / time_length,
+                          window,
+                          'valid')
+
+    time = (time[(window_length - 1):] + time[:-(window_length - 1)]) / 2.0
+    
+    return time, rolling
 
 
 def return_confidence_intervals(entries, cumsum):
