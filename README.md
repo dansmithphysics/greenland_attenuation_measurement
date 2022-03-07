@@ -1,8 +1,12 @@
 # Bulk Attenuation Measurement at Summit Station, Greenland.
 
-Analysis code for the * *in situ* * broadband measurement of the radio frequency attenuation length at Summit Station, Greenland. The data was collected by Dan Smith, Bryan Hendricks and Christoph Welling in Summer 2021 for the RNO-G collaboration. As of March 2022, the results are in a paper out for review in the Journal of Glaciology.
+Analysis code for the *in situ* broadband measurement of the radio frequency attenuation length at Summit Station, Greenland. The data was collected by Dan Smith, Bryan Hendricks and Christoph Welling in Summer 2021 for the RNO-G collaboration.
 
-* *In situ* *, broadband measurement of the radio frequency attenuation length at Summit Station, Greenland, J.A. Aguilar * *et al.* * e-Print: [2201.07846](https://arxiv.org/abs/2201.07846) [astro-ph.IM]
+As of March 2022, the results are in a paper out for review in the Journal of Glaciology. The current citation is:
+
+*In situ*, broadband measurement of the radio frequency attenuation length at Summit Station, Greenland, J.A. Aguilar *et al.* e-Print: [2201.07846](https://arxiv.org/abs/2201.07846) [astro-ph.IM]
+
+Please direct all code-related questions to [danielsmith@uchicago.edu](mailto:danielsmith@uchicago.edu).
 
 ## Data
 
@@ -16,7 +20,11 @@ Simulations are also required. The simulations performed on xFDTD are not yet do
 
 For the air-to-air normalization study, the amplifier response and s-parameter files of filters are also required. They're included in the repository. The amplifier response, found [here](data_raw/amp_board_v3.txt), can be derived from [RNO-G's detector paper, Fig. 17](https://arxiv.org/pdf/2010.12279.pdf). The s-parameter files are all from Minicircuits website and datasheets for [VHF-145+.S2P](https://www.minicircuits.com/pdfs/VHF-145+.pdf) and [VLF-575+](https://www.mouser.com/datasheet/2/1030/VLF-575-1701652.pdf). 
 
+For the conversion of bulk attenuation to attenuation at any given depth, the temperature of the ice as a function of depth from the GRIP borehole is required. This data is available from the Greenland Ice Core Project server [here](ftp://ftp.ncdc.noaa.gov/pub/data/paleo/icecore/greenland/summit/grip/physical/griptemp.txt). Also required is the measured relationship between attenuation and temperature as [Bogorodsky *et al.*](https://doi.org/10.1007/978-94-009-5275-1). This data is in the repository [here](data_raw/measured_att_vs_temp.txt) and can be derived from the data plotted in the paper by [Avva *et al.* here](https://arxiv.org/pdf/1409.5413.pdf).
+
 ## Analysis Scripts
+
+The analysis code is roughly arranged in sequential scripts that prepare data (`A01`), plot results (`A02`), and calculate systematic uncertainties and biases (`A03` and `A04`) before calculating the bulk attenuation (`A05`) and plotting the figures in the paper (`A06`). A description of each script is below.
 
 ### A01_average_and_convert.py
 
@@ -64,8 +72,9 @@ Calculates and plots the bulk attenuation at 200 MHz as a function of window len
 
 ### A06_plot_att.py
 
-Processes the output of `A05_att_with_errors.py` to create the attenuation plots from the paper, Fig. 6 and Fig. 7 from the paper. Calculations include calculating the uncertainty on the linear fit to create the final fit confidence interval. The bulk attenuation is converted to the average attenution of the top 1500 m of the ice by scaling the bulk result by a factor of `1.12`, determined by the script `A06_plot_att_vs_temperature.py` to be an appropriate correction to convert between the two. 
+Processes the output of `A05_att_with_errors.py` to create the attenuation plots from the paper, Fig. 6 and Fig. 7 from the paper. Calculations include calculating the uncertainty on the linear fit to create the final fit confidence interval. The bulk attenuation is converted to the average attenution of the top 1500 m of the ice by scaling the bulk result by a factor of `~1.20`, determined by the script `A06_plot_att_vs_temperature.py` to be an appropriate correction to convert between the two. 
 
 ### A06_plot_att_vs_temperature.py
 
 Converts the bulk attenuation into an attenuation as function of depth via the process described in the paper in the section named **Discussion and Summary** and in Eq. 8. Creates Fig. 8 from the paper, the attenuation vs. depth at 150 and 330 MHz.
+
