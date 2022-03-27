@@ -52,7 +52,9 @@ def calculate_fit(ms, bs):
 
 
 def plot_fit(ms, bs, scale, n_freq_pts=100):
-
+    print("ms:", np.mean(ms * scale) * 1e6, np.std(ms * scale) * 1e6)
+    print("bs:", np.mean(bs * scale), np.std(bs * scale))
+    
     fit_x = np.linspace(0.0, 1e9, n_freq_pts)
 
     fit_y = np.zeros(len(fit_x))
@@ -105,7 +107,7 @@ if __name__ == "__main__":
 
     result_data = np.load("./data_processed/A05_mc_results.npz")
 
-    for scale_to_top_1p5k in [1.0, 1.1997683538791095]:
+    for scale_to_top_1p5k, scale_to_top_1p5k_sig in zip([1.0, 1.224577441691559], [0.0, 0.06817277754283599]):
 
         x = result_data['freqs']
         yerr_min = result_data['low_bound']
@@ -113,6 +115,7 @@ if __name__ == "__main__":
         y = result_data['middle_val']
 
         plt.figure(figsize=(5, 4))
+        '''
         plt.errorbar(x[yerr_min != 0] * 1e-6,
                      y[yerr_min != 0] * scale_to_top_1p5k,
                      yerr=((y[yerr_min != 0] - yerr_min[yerr_min != 0]) * scale_to_top_1p5k,
@@ -120,7 +123,29 @@ if __name__ == "__main__":
                      color='black',
                      ls='none',
                      label="Data Result with 1 $\sigma$ Errors")
+        '''
+        
+        central = y[yerr_min != 0] * scale_to_top_1p5k
+        sig_up = (y[yerr_min != 0] - yerr_min[yerr_min != 0]) * scale_to_top_1p5k
+        sig_dn = (yerr_max[yerr_min != 0] - y[yerr_min != 0]) * scale_to_top_1p5k
+        sig_up = np.sqrt(np.square(sig_up) + np.square(central * scale_to_top_1p5k_sig))
+        sig_dn = np.sqrt(np.square(sig_dn) + np.square(central * scale_to_top_1p5k_sig))
 
+        for i in range(len(x[yerr_min != 0])):
+            print(i, "\t", 
+                  x[yerr_min != 0][i] * 1e-6, "\t", 
+                  y[yerr_min != 0][i] * scale_to_top_1p5k, "\t", 
+                  sig_up[i], "\t", 
+                  sig_dn[i])
+        
+        plt.errorbar(x[yerr_min != 0] * 1e-6,
+                     y[yerr_min != 0] * scale_to_top_1p5k,
+                     yerr=(sig_up, sig_dn),
+                     color='black',
+                     ls='none',
+                     marker="o",
+                     label="Data Result with 1 $\sigma$ Errors")
+        
         plt.errorbar(x[yerr_min == 0] * 1e-6,
                      y[yerr_min == 0] * scale_to_top_1p5k,
                      yerr=(yerr_max[yerr_min == 0] - 550.0) * scale_to_top_1p5k,
@@ -128,10 +153,6 @@ if __name__ == "__main__":
                      color='black',
                      ls='none',
                      label="95% CL Upper Limit")
-
-        plt.scatter(x[yerr_min != 0] * 1e-6,
-                    y[yerr_min != 0] * scale_to_top_1p5k,
-                    color='black')
 
         plt.scatter(x[yerr_min == 0] * 1e-6,
                     y[yerr_min == 0] * scale_to_top_1p5k,
@@ -154,10 +175,34 @@ if __name__ == "__main__":
         plt.xlabel("Frequency [MHz]")
 
         if(scale_to_top_1p5k == 1.0):
-            plt.ylim(500.0, 1100.0)
+            
+            annotation_string = r"Fit: $\langle L_\alpha(\nu) \rangle = (942\pm99)$"
+            annotation_string += "\n"
+            annotation_string += r"$- (0.66\pm0.12) \nu$ m"
+            plt.text(475, 900, annotation_string,
+                     ha='center',
+                     bbox=dict(boxstyle="round",
+                               ec='black',
+                               alpha = 0.85,
+                               fc='w')
+                     )                               
+            
+            plt.ylim(500.0, 1250.0)
             plt.ylabel(r"Bulk Field Attenuation Length, $\langle L_\alpha\rangle$ [m]")
         else:
-            plt.ylim(600.0, 1250.0)
+
+            annotation_string = r"Fit: $\langle L_\alpha(\nu) \rangle = (1154\pm121)$"
+            annotation_string += "\n"
+            annotation_string += r"$- (0.81\pm0.14) \nu$ m"
+            plt.text(465, 1100, annotation_string,
+                     ha='center',
+                     bbox=dict(boxstyle="round",
+                               ec='black',
+                               alpha = 0.85,
+                               fc='w')
+                     )                               
+
+            plt.ylim(600.0, 1550.0)
             plt.ylabel(r"Avg. Field Attenuation Length of Top 1500 m [m]")
 
         plt.legend(loc="upper right")
