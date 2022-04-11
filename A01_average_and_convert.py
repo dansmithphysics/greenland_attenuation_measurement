@@ -2,17 +2,15 @@ import glob
 import numpy as np
 
 
-def load_templates(file_names):
+def load_and_pickle_templates(input_file_names, output_file_name):
     """
     Loads csv files from oscilloscope data,
     and averages time traces together.
-
-    Returns time and everaged trace.
     """
 
-    template_time, template_trace = [], []
+    template_time, template_trace = np.array([]), np.array([])
 
-    for i_file_name, file_name in enumerate(file_names):
+    for i_file_name, file_name in enumerate(input_file_names):
         data_time, data_trace = np.loadtxt(file_name,
                                            delimiter=",",
                                            skiprows=6,
@@ -25,41 +23,36 @@ def load_templates(file_names):
         else:
             template_trace += data_trace
 
-    template_trace /= float(len(file_names))
+    template_trace /= float(len(input_file_names))
     template_trace -= np.mean(template_trace[:100])
-
-    return template_time, template_trace
+    
+    np.savez(output_file_name,
+             template_time=template_time,
+             template_trace=template_trace)
 
 
 if(__name__ == "__main__"):
 
-    ###################################
-    # Data collected with healthy FID #
-    ###################################
+    # Data collected with healthy FID
+    input_file_names = glob.glob("./data_raw/2021_08_02_0db_run_sharper_trigger/*_Ch1.csv")
+    if(len(input_file_names) == 0):
+        print("No files found for in-ice data. Are you sure you've downloaded them to ./data_raw/?")
+    else:
+        output_file_name = "./data_processed/averaged_in_ice_trace"
+        load_and_pickle_templates(input_file_names, output_file_name)
+    
+    # Data collected for Biref, unhealthy FID
+    input_file_names = glob.glob("./data_raw/2021_08_09_biref_*/*_Ch1.csv")
+    if(len(input_file_names) == 0):
+        print("No files found for in-ice biref data. Are you sure you've downloaded them to ./data_raw/?")
+    else:
+        output_file_name = "./data_processed/averaged_in_ice_trace_biref"
+        load_and_pickle_templates(input_file_names, output_file_name)
 
-    file_names = glob.glob("./data_raw/2021_08_02_0db_run_sharper_trigger/*_Ch1.csv")
-    template_time, template_trace = load_templates(file_names)
-
-    np.savez("./data_processed/averaged_in_ice_trace",
-             template_time=template_time,
-             template_trace=template_trace)
-
-    ###########################################
-    # Data collected for Biref, unhealthy FID #
-    ###########################################
-
-    file_names = glob.glob("./data_raw/2021_08_09_biref_*/*_Ch1.csv")
-    template_time, template_trace = load_templates(file_names)
-    np.savez("./data_processed/averaged_in_ice_trace_biref",
-             template_time=template_time,
-             template_trace=template_trace)
-
-    ###########################################
-    # Data collected with healthy FID, in air #
-    ###########################################
-
-    file_names = glob.glob("./data_raw/2021_08_02_psuedo_air_to_air_with_46db_att_Ch1.csv")
-    template_time, template_trace = load_templates(file_names)
-    np.savez("./data_processed/averaged_in_air_trace",
-             template_time=template_time,
-             template_trace=template_trace)
+    # Data collected with healthy FID, in air
+    input_file_names = glob.glob("./data_raw/2021_08_02_psuedo_air_to_air_with_46db_att_Ch1.csv")
+    if(len(input_file_names) == 0):
+        print("No files found for in-air data. Are you sure you've downloaded them to ./data_raw/?")
+    else:
+        output_file_name = "./data_processed/averaged_in_air_trace"
+        load_and_pickle_templates(input_file_names, output_file_name)

@@ -6,18 +6,11 @@ import analysis_funcs
 import experiment
 
 
-if __name__ == "__main__":
+def main(exper_constants, exper):
 
-    # correction to bring t0 to zero
-    # corrects for cable delays, ect.
-    time_offset = (35.55e-6 - 34.59e-6)
-
-    exper_constants = experiment.Experiment()
+    data_time = exper.ice_time
+    data_trace = exper.ice_trace
     
-    data_time, data_trace = analysis_funcs.load_file("data_processed/averaged_in_ice_trace.npz",
-                                                     att_correction=exper_constants.ice_att,
-                                                     time_offset=exper_constants.time_offset)
-
     fs = 1.0 / (data_time[1] - data_time[0]) / 1e6
     window_length = 1000
 
@@ -71,3 +64,14 @@ if __name__ == "__main__":
                 bbox_inches='tight')
 
     plt.show()
+
+
+if __name__ == "__main__":
+
+    ice_file_name = "./data_processed/averaged_in_ice_trace.npz"
+    air_file_name = "./data_processed/averaged_in_air_trace.npz"
+    
+    exper_constants = experiment.ExperimentConstants()
+    exper = experiment.Experiment(exper_constants, ice_file_name, air_file_name)    
+
+    main(exper_constants, exper)

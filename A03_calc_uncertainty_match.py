@@ -8,7 +8,7 @@ def load_s11_files(file_names):
 
     s11s = {}
     freqs = {}
-    for file_name in np.append(air_file_names, ice_file_names):
+    for file_name in file_names:
 
         freq, s11 = np.loadtxt(file_name,
                                delimiter=",",
@@ -20,8 +20,7 @@ def load_s11_files(file_names):
     return freqs, s11s
 
 
-if __name__ == "__main__":
-
+def main():
     air_file_names = glob.glob("./data_raw/LPDA_Summit_Measurements/*AIR*LPDA*S11*csv")
     ice_file_names = glob.glob("./data_raw/LPDA_Summit_Measurements/*ICE*LPDA*S11*csv")
     file_names = np.append(air_file_names, ice_file_names)
@@ -138,3 +137,7 @@ if __name__ == "__main__":
     plt.axvline(entries_max, color='red', linestyle='--')
 
     plt.show()
+
+
+if __name__ == "__main__":
+    main()

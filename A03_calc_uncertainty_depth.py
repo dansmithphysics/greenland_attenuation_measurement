@@ -44,9 +44,7 @@ def get_average_n_of_top_1k():
     return n_avg_top_1k
 
 
-if __name__ == "__main__":
-
-    exper_constants = experiment.Experiment()
+def main(exper_constants, exper):
 
     # Time corrections.
     # I don't use the time offset as calculated in exper_constants
@@ -61,19 +59,19 @@ if __name__ == "__main__":
 
     file_names = glob.glob("./data_processed/averaged_in_ice_trace_biref.npz")
 
-    data_t, data_trace = analysis_funcs.load_file(file_name=file_names[0],
-                                                  att_correction=0,
-                                                  time_offset=time_offset)
+    data_time, data_trace = analysis_funcs.load_file(file_name=file_names[0],
+                                                     att_correction=0,
+                                                     time_offset=time_offset)    
+    
+    data_time, rolling = analysis_funcs.power_integration(data_time, data_trace, window_length)
 
-    data_t, rolling = analysis_funcs.power_integration(data_t, data_trace, window_length)
-
-    noise = rolling[np.logical_and(data_t > 25.0e-6, data_t < 32.0e-6)]
+    noise = rolling[np.logical_and(data_time > 25.0e-6, data_time < 32.0e-6)]
 
     entries, cumsum = analysis_funcs.calculate_uncertainty(np.abs(noise))
     threshold = entries[np.argmin(np.abs(cumsum - 0.95))]
 
     plt.figure()
-    plt.semilogy(data_t * 1e6, rolling,
+    plt.semilogy(data_time * 1e6, rolling,
                  color='black', linewidth=1.0)
     plt.axvline(exper_constants.gb_start * 1e6, color='purple', alpha=0.85, label="Arrival of Bedrock Echo")
     plt.axhline(threshold, color='red', linestyle="--", label="95% CI of Noise")
@@ -152,3 +150,14 @@ if __name__ == "__main__":
                 dpi=300)
 
     plt.show()
+
+
+if __name__ == "__main__":
+
+    ice_file_name = "./data_processed/averaged_in_ice_trace.npz"
+    air_file_name = "./data_processed/averaged_in_air_trace.npz"
+    
+    exper_constants = experiment.ExperimentConstants()
+    exper = experiment.Experiment(exper_constants, ice_file_name, air_file_name)    
+
+    main(exper_constants, exper)

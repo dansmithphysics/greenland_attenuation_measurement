@@ -10,11 +10,8 @@ import experiment
 def dbm(trace):
     return 10.0 * np.log10(np.square(np.abs(trace)) / 50.0 * 1e3)  # 1e3 for mW
 
+exper_constants = experiment.ExperimentConstants()
 
-exper_constants = experiment.Experiment()
-
-exper_constants.Z0 = 120.0 * np.pi
-exper_constants.ZL = 50.0
 c = exper_constants.c / 1e9
 
 ####################
