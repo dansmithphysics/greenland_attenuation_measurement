@@ -26,13 +26,13 @@ For the conversion of bulk attenuation to attenuation at any given depth, the te
 
 ## Analysis Scripts
 
-The analysis code is roughly arranged in sequential scripts that prepare data (`A01`), plot results (`A02`), and calculate systematic uncertainties (`A03`) and biases (`A04`) before calculating the bulk attenuation (`A05`) and plotting the figures in the paper (`A06`). A description of each script is below.
+The analysis code is roughly arranged in sequential scripts that prepare data (`A01`), plot results (`A02`), and calculate systematic uncertainties (`A03`) and biases (`A04`) before calculating the bulk attenuation (`A05`) and plotting the figures in the paper (`A06`, `A07`). A description of each script is below.
 
 All scripts were built in Python 3.9.5.
 
 ### experiment.py
 
-Class storing hardcoded numbers from the experiment, including the time of the ground bounce and uncertainties used in the attenuation measurement.
+Defines three classes. The first, `ExperimentConstants`, storing hardcoded numbers from the experiment, including the time of the ground bounce and uncertainties used in the attenuation measurement. The second, `Experiment`, handles the attenuation calculation as well as the toy MC approach to calculate errorbars. The third, `AttenuationModel`, calculates the attenuation vs. depth using different models that depend on chemistry and temperature. 
 
 ### A01_average_and_convert.py
 
@@ -82,9 +82,13 @@ Calculates and plots the bulk attenuation at 200 MHz as a function of window len
 
 Processes the output of `A05_att_with_errors.py` to create the attenuation Fig. 6 and Fig. 7 from the paper. Calculations include calculating the uncertainty on the linear fit to create the final fit confidence interval. The bulk attenuation is converted to the average attenution of the top 1500 m of the ice by scaling the bulk result by a factor of `~1.20`, determined by the script `A06_plot_att_vs_temperature.py` to be an appropriate correction to convert between the two. 
 
-### A06_plot_att_vs_temperature.py
+### A07_plot_att_vs_temperature.py
 
-Converts the bulk attenuation into an attenuation as function of depth via the process described in the paper in the section named **Discussion and Summary** and in Eq. 8. Creates Fig. 8 from the paper, the attenuation vs. depth at 150 and 330 MHz.
+Converts the bulk attenuation into an attenuation as function of depth via the process described in the paper in the section named **Discussion and Summary** and in Eq. 8 and Eq. 9. Creates Fig. 7 from the paper, the attenuation vs. depth at 300 MHz. Also compares the model used in the paper (by MacGregor) with other models (Paden, Pure Ice, and Bogorodsky.
+
+### A08_nuradiomc_compare.py
+
+Compares the measurement with the attenuation model used in NuRadioMC.
 
 ### analysis_funcs.py
 
