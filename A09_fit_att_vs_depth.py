@@ -1,9 +1,7 @@
-import copy
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 import scipy.constants
-from scipy.signal import butter, lfilter
 from scipy.optimize import curve_fit
 import A06_plot_att
 import A07_plot_att_vs_temperature

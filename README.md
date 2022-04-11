@@ -88,7 +88,7 @@ Calculates and plots the bulk attenuation at 200 MHz as a function of window len
 
 Processes the output of `A05_att_with_errors.py` to create the attenuation Fig. 6 and Fig. 7 from the paper. Calculations include calculating the uncertainty on the linear fit to create the final fit confidence interval. The bulk attenuation is converted to the average attenution of the top 1500 m of the ice by scaling the bulk result by a factor of `~1.20`, determined by the script `A06_plot_att_vs_temperature.py` to be an appropriate correction to convert between the two. 
 
-### A07_plot_att_vs_temperature.py
+### A07_plot_att_vs_depth.py
 
 Converts the bulk attenuation into an attenuation as function of depth via the process described in the paper in the section named **Discussion and Summary** and in Eq. 8 and Eq. 9. Creates Fig. 7 from the paper, the attenuation vs. depth at 300 MHz. Also compares the model used in the paper (by MacGregor) with other models (Paden, Pure Ice, and Bogorodsky.
 
@@ -96,7 +96,7 @@ Converts the bulk attenuation into an attenuation as function of depth via the p
 
 Compares the measurement with the attenuation model used in NuRadioMC.
 
-### A09_fit_att_vs_temperature.py
+### A09_fit_att_vs_depth.py
 
 Rudimentary code to fit the power from subsurface layers to fit the model of attenuation vs. depth. This is a double check of the attenuation for depths < 1500 m, but was not included in the paper due to uncertainties on reflection coefficient of subsurface layers and other unknown uncertainties / systematics.
 
