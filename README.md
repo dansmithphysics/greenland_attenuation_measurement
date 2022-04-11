@@ -96,6 +96,10 @@ Converts the bulk attenuation into an attenuation as function of depth via the p
 
 Compares the measurement with the attenuation model used in NuRadioMC.
 
+### A09_fit_att_vs_temperature.py
+
+Rudimentary code to fit the power from subsurface layers to fit the model of attenuation vs. depth. This is a double check of the attenuation for depths < 1500 m, but was not included in the paper due to uncertainties on reflection coefficient of subsurface layers and other unknown uncertainties / systematics.
+
 ### analysis_funcs.py
 
 Collection of functions used in more than one analysis script. 

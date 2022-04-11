@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import analysis_funcs
+import experiment
 
 
 def gaus_2d(X, sig_x, sig_y, rho, x0, y0):
@@ -81,119 +82,114 @@ def plot_fit(ms, bs, scale, n_freq_pts=100):
              color='red')
 
 
-def main():
-
-    n_top = 1.4
-    n_bot = 1.78
-    ff = np.square(n_bot / n_top)
+def main(exper_constants, scale_to_top_1p5k, scale_to_top_1p5k_sig, save_fig=False):
 
     # Taken from Avva et al.
     # Adjusted to include focusing factor.
 
     d_ice_avva = 3015.0 * 2.0
     thing_in_natural_log = np.exp(d_ice_avva / 947.0)
-    thing_in_natural_log *= np.sqrt(ff)
+    thing_in_natural_log *= np.sqrt(exper_constants.m_ff)
     result = d_ice_avva / np.log(thing_in_natural_log)
 
     thing_in_natural_log = np.exp(d_ice_avva / (947.0 + 92.0))
-    thing_in_natural_log *= np.sqrt(ff)
+    thing_in_natural_log *= np.sqrt(exper_constants.m_ff)
     result_err = d_ice_avva / np.log(thing_in_natural_log)
     result_err -= result
 
     result_data = np.load("./data_processed/A05_mc_results.npz")
 
-    for scale_to_top_1p5k, scale_to_top_1p5k_sig in zip([1.0, 1.224577441691559], [0.0, 0.06817277754283599]):
-
-        x = result_data['freqs']
-        yerr_min = result_data['low_bound']
-        yerr_max = result_data['high_bound']
-        y = result_data['middle_val']
+    x = result_data['freqs']
+    yerr_min = result_data['low_bound']
+    yerr_max = result_data['high_bound']
+    y = result_data['middle_val']
         
-        central = y[yerr_min != 0] * scale_to_top_1p5k
-        sig_up = (y[yerr_min != 0] - yerr_min[yerr_min != 0]) * scale_to_top_1p5k
-        sig_dn = (yerr_max[yerr_min != 0] - y[yerr_min != 0]) * scale_to_top_1p5k
-        sig_up = np.sqrt(np.square(sig_up) + np.square(central * scale_to_top_1p5k_sig))
-        sig_dn = np.sqrt(np.square(sig_dn) + np.square(central * scale_to_top_1p5k_sig))
+    central = y[yerr_min != 0] * scale_to_top_1p5k
+    sig_up = (y[yerr_min != 0] - yerr_min[yerr_min != 0]) * scale_to_top_1p5k
+    sig_dn = (yerr_max[yerr_min != 0] - y[yerr_min != 0]) * scale_to_top_1p5k
+    sig_up = np.sqrt(np.square(sig_up) + np.square(central * scale_to_top_1p5k_sig))
+    sig_dn = np.sqrt(np.square(sig_dn) + np.square(central * scale_to_top_1p5k_sig))
 
-        for i in range(len(x[yerr_min != 0])):
-            print(i, "\t", 
-                  x[yerr_min != 0][i] * 1e-6, "\t", 
-                  y[yerr_min != 0][i] * scale_to_top_1p5k, "\t", 
-                  sig_up[i], "\t", 
-                  sig_dn[i])
+    for i in range(len(x[yerr_min != 0])):
+        print(i, "\t", 
+              x[yerr_min != 0][i] * 1e-6, "\t", 
+              y[yerr_min != 0][i] * scale_to_top_1p5k, "\t", 
+              sig_up[i], "\t", 
+              sig_dn[i])
 
-        plt.figure(figsize=(5, 4))        
-        plt.errorbar(x[yerr_min != 0] * 1e-6,
-                     y[yerr_min != 0] * scale_to_top_1p5k,
-                     yerr=(sig_up, sig_dn),
-                     color='black',
-                     ls='none',
-                     marker="o",
-                     label="Data Result with 1 $\sigma$ Errors")
+    plt.figure(figsize=(5, 4))        
+    plt.errorbar(x[yerr_min != 0] * 1e-6,
+                 y[yerr_min != 0] * scale_to_top_1p5k,
+                 yerr=(sig_up, sig_dn),
+                 color='black',
+                 ls='none',
+                 marker="o",
+                 label="Data Result with 1 $\sigma$ Errors")
         
-        plt.errorbar(x[yerr_min == 0] * 1e-6,
-                     y[yerr_min == 0] * scale_to_top_1p5k,
-                     yerr=(yerr_max[yerr_min == 0] - 550.0) * scale_to_top_1p5k,
-                     uplims=True,
-                     color='black',
-                     ls='none',
-                     label="95% CL Upper Limit")
+    plt.errorbar(x[yerr_min == 0] * 1e-6,
+                 y[yerr_min == 0] * scale_to_top_1p5k,
+                 yerr=(yerr_max[yerr_min == 0] - 550.0) * scale_to_top_1p5k,
+                 uplims=True,
+                 color='black',
+                 ls='none',
+                 label="95% CL Upper Limit")
 
-        plt.scatter(x[yerr_min == 0] * 1e-6,
-                    y[yerr_min == 0] * scale_to_top_1p5k,
-                    marker="_",
-                    color="black")
+    plt.scatter(x[yerr_min == 0] * 1e-6,
+                y[yerr_min == 0] * scale_to_top_1p5k,
+                marker="_",
+                color="black")
+    
+    plot_fit(result_data['ms'],
+             result_data['bs'],
+             scale=scale_to_top_1p5k)
 
-        plot_fit(result_data['ms'],
-                 result_data['bs'],
-                 scale=scale_to_top_1p5k)
+    plt.errorbar([75.0], [result * scale_to_top_1p5k], yerr=[result_err * scale_to_top_1p5k],
+                 color='purple', alpha=0.75)
+    plt.scatter([75.0], [result * scale_to_top_1p5k],
+                color='purple', alpha=0.75, label="Avva et al. Result, Corrected")
+    
+    plt.axvline(145.0, color='red', linestyle='--', label="Bandpass Filters")
+    plt.axvline(575.0, color='red', linestyle='--')
 
-        plt.errorbar([75.0], [result * scale_to_top_1p5k], yerr=[result_err * scale_to_top_1p5k],
-                     color='purple', alpha=0.75)
-        plt.scatter([75.0], [result * scale_to_top_1p5k],
-                    color='purple', alpha=0.75, label="Avva et al. Result, Corrected")
+    plt.xlim(50.0, 600.0)
+    plt.xlabel("Frequency [MHz]")
 
-        plt.axvline(145.0, color='red', linestyle='--', label="Bandpass Filters")
-        plt.axvline(575.0, color='red', linestyle='--')
-
-        plt.xlim(50.0, 600.0)
-        plt.xlabel("Frequency [MHz]")
-
-        if(scale_to_top_1p5k == 1.0):
+    if(scale_to_top_1p5k == 1.0):
             
-            annotation_string = r"Fit: $\langle L_\alpha(\nu) \rangle = (942\pm99)$"
-            annotation_string += "\n"
-            annotation_string += r"$- (0.66\pm0.12) \nu$ m"
-            plt.text(475, 900, annotation_string,
-                     ha='center',
-                     bbox=dict(boxstyle="round",
-                               ec='black',
-                               alpha = 0.85,
-                               fc='w')
-                     )                               
+        annotation_string = r"Fit: $\langle L_\alpha(\nu) \rangle = (942\pm99)$"
+        annotation_string += "\n"
+        annotation_string += r"$- (0.66\pm0.12) \nu$ m"
+        plt.text(475, 900, annotation_string,
+                 ha='center',
+                 bbox=dict(boxstyle="round",
+                           ec='black',
+                           alpha = 0.85,
+                           fc='w')
+                 )                               
             
-            plt.ylim(500.0, 1250.0)
-            plt.ylabel(r"Bulk Field Attenuation Length, $\langle L_\alpha\rangle$ [m]")
-        else:
+        plt.ylim(500.0, 1250.0)
+        plt.ylabel(r"Bulk Field Attenuation Length, $\langle L_\alpha\rangle$ [m]")
+    else:
 
-            annotation_string = r"Fit: $\langle L_\alpha(\nu) \rangle = (1154\pm121)$"
-            annotation_string += "\n"
-            annotation_string += r"$- (0.81\pm0.14) \nu$ m"
-            plt.text(465, 1100, annotation_string,
-                     ha='center',
-                     bbox=dict(boxstyle="round",
-                               ec='black',
-                               alpha = 0.85,
-                               fc='w')
-                     )                               
+        annotation_string = r"Fit: $\langle L_\alpha(\nu) \rangle = (1154\pm121)$"
+        annotation_string += "\n"
+        annotation_string += r"$- (0.81\pm0.14) \nu$ m"
+        plt.text(465, 1100, annotation_string,
+                 ha='center',
+                 bbox=dict(boxstyle="round",
+                           ec='black',
+                           alpha = 0.85,
+                           fc='w')
+                 )                               
 
-            plt.ylim(600.0, 1550.0)
-            plt.ylabel(r"Avg. Field Attenuation Length of Top 1500 m [m]")
+        plt.ylim(600.0, 1550.0)
+        plt.ylabel(r"Avg. Field Attenuation Length of Top 1500 m [m]")
 
-        plt.legend(loc="upper right")
-        plt.tight_layout()
-        plt.grid()
+    plt.legend(loc="upper right")
+    plt.tight_layout()
+    plt.grid()
 
+    if(save_fig):
         if(scale_to_top_1p5k == 1.0):
             plt.savefig("./plots/A05_att_with_errors_final.png",
                         dpi=300)
@@ -201,8 +197,12 @@ def main():
             plt.savefig("./plots/A05_att_with_errors_final_1500m.png",
                         dpi=300)
 
-    plt.show()
-
 
 if __name__ == "__main__":
-    main()
+
+    exper_constants = experiment.ExperimentConstants()
+    
+    for scale_to_top_1p5k, scale_to_top_1p5k_sig in zip([1.0, 1.224577441691559], [0.0, 0.06817277754283599]):
+        main(exper_constants, scale_to_top_1p5k, scale_to_top_1p5k_sig, save_fig=True)
+
+    plt.show()
