@@ -1,9 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.interpolate
-from scipy.stats import linregress
-from scipy.optimize import curve_fit
-from sklearn.decomposition import PCA
 import analysis_funcs
 
 
@@ -48,7 +44,6 @@ def calculate_fit(ms, bs):
     plt.legend()
 
     plt.show()
-    exit()
 
 
 def plot_fit(ms, bs, scale, n_freq_pts=100):
@@ -86,7 +81,7 @@ def plot_fit(ms, bs, scale, n_freq_pts=100):
              color='red')
 
 
-if __name__ == "__main__":
+def main():
 
     n_top = 1.4
     n_bot = 1.78
@@ -113,17 +108,6 @@ if __name__ == "__main__":
         yerr_min = result_data['low_bound']
         yerr_max = result_data['high_bound']
         y = result_data['middle_val']
-
-        plt.figure(figsize=(5, 4))
-        '''
-        plt.errorbar(x[yerr_min != 0] * 1e-6,
-                     y[yerr_min != 0] * scale_to_top_1p5k,
-                     yerr=((y[yerr_min != 0] - yerr_min[yerr_min != 0]) * scale_to_top_1p5k,
-                           (yerr_max[yerr_min != 0] - y[yerr_min != 0]) * scale_to_top_1p5k),
-                     color='black',
-                     ls='none',
-                     label="Data Result with 1 $\sigma$ Errors")
-        '''
         
         central = y[yerr_min != 0] * scale_to_top_1p5k
         sig_up = (y[yerr_min != 0] - yerr_min[yerr_min != 0]) * scale_to_top_1p5k
@@ -137,7 +121,8 @@ if __name__ == "__main__":
                   y[yerr_min != 0][i] * scale_to_top_1p5k, "\t", 
                   sig_up[i], "\t", 
                   sig_dn[i])
-        
+
+        plt.figure(figsize=(5, 4))        
         plt.errorbar(x[yerr_min != 0] * 1e-6,
                      y[yerr_min != 0] * scale_to_top_1p5k,
                      yerr=(sig_up, sig_dn),
@@ -217,3 +202,7 @@ if __name__ == "__main__":
                         dpi=300)
 
     plt.show()
+
+
+if __name__ == "__main__":
+    main()
