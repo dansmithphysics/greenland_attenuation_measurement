@@ -4,7 +4,7 @@ import scipy.interpolate
 import scipy.constants
 from scipy.optimize import curve_fit
 import A06_plot_att
-import A07_plot_att_vs_temperature
+import A07_plot_att_vs_depth
 import experiment
 import analysis_funcs
 
@@ -66,16 +66,16 @@ def main(bulk_att_file, freqs_to_plot):
     max_depth = 3004.0
     depths = np.linspace(0.0, max_depth, 3004)
 
-    temps = A07_plot_att_vs_temperature.load_and_interpolate(depths, "./data_raw/griptemp.txt",
-                                                             skiprows=40, delimiter="\t")
-    cls = A07_plot_att_vs_temperature.load_and_interpolate(depths, "./data_raw/gripion.txt",
-                                                           skiprows=75, usecols=[0, 6])
-    nh4s = A07_plot_att_vs_temperature.load_and_interpolate(depths, "./data_raw/gripion.txt",
-                                                            skiprows=75, usecols=[0, 11])
-    deps = A07_plot_att_vs_temperature.load_and_interpolate(depths, "./data_raw/gripdep.txt",
-                                                            skiprows=80, usecols=[0, 1])
-    hs = A07_plot_att_vs_temperature.load_and_interpolate(depths, "./data_raw/gripdep.txt",
-                                                          skiprows=80, usecols=[0, 2])    
+    temps = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/griptemp.txt",
+                                                       skiprows=40, delimiter="\t")
+    cls = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/gripion.txt",
+                                                     skiprows=75, usecols=[0, 6])
+    nh4s = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/gripion.txt",
+                                                      skiprows=75, usecols=[0, 11])
+    deps = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/gripdep.txt",
+                                                      skiprows=80, usecols=[0, 1])
+    hs = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/gripdep.txt",
+                                                    skiprows=80, usecols=[0, 2])    
 
     # H+ (hs) is in units of micromolarity.
     # reported as "micromols per kg"
@@ -187,5 +187,5 @@ if __name__ == "__main__":
     
     main(bulk_att_file, freqs_to_use)
 
-    plt.savefig("./plots/A09_fit_att_vs_temperature.png", dpi=300)
+    plt.savefig("./plots/A09_fit_att_vs_depth.png", dpi=300)
     plt.show()
