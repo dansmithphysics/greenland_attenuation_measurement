@@ -90,7 +90,7 @@ def main():
     plt.legend(loc = 'lower left')
     plt.xlim(00.0, 600.0)
     plt.ylim(500.0, 1300.0)
-    plt.savefig("./plots/A11_nuradiomc_Avva_DanSmith_att_comparison.png", dpi = 300)
+    plt.savefig("./plots/A08_nuradiomc_Avva_DanSmith_att_comparison.png", dpi = 300)
 
     plt.show()
 
