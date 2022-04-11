@@ -22,7 +22,13 @@ Simulations are also required. The simulations performed on xFDTD are not yet do
 
 For the air-to-air normalization study, the amplifier response and s-parameter files of filters are also required. They're included in the repository. The amplifier response, found [here](data_raw/amp_board_v3.txt), can be derived from [RNO-G's detector paper, Fig. 17](https://arxiv.org/pdf/2010.12279.pdf). The s-parameter files are all from Minicircuits website and datasheets for [VHF-145+.S2P](https://www.minicircuits.com/pdfs/VHF-145+.pdf) and [VLF-575+](https://www.mouser.com/datasheet/2/1030/VLF-575-1701652.pdf). 
 
-For the conversion of bulk attenuation to attenuation at any given depth, the temperature of the ice as a function of depth from the GRIP borehole is required. This data is available from the Greenland Ice Core Project server [here](ftp://ftp.ncdc.noaa.gov/pub/data/paleo/icecore/greenland/summit/grip/physical/griptemp.txt). Also required is the measured relationship between attenuation and temperature as [Bogorodsky *et al.*](https://doi.org/10.1007/978-94-009-5275-1). This data is in the repository [here](data_raw/measured_att_vs_temp.txt) and can be derived from the data plotted in the paper by [Avva *et al.* here](https://arxiv.org/pdf/1409.5413.pdf).
+For the conversion of bulk attenuation to attenuation at any given depth, the temperature and chemistry impurities of the ice as a function of depth from the GRIP borehole is required. This data is available from the Greenland Ice Core Project server,
+
+* [Temperature](ftp://ftp.ncdc.noaa.gov/pub/data/paleo/icecore/greenland/summit/grip/physical/griptemp.txt).
+* [H+](ftp://ftp.ncdc.noaa.gov/pub/data/paleo/icecore/greenland/summit/grip/ecm/gripdep.txt)
+* [Cl- & NH4+](ftp://ftp.ncdc.noaa.gov/pub/data/paleo/icecore/greenland/summit/grip/chem/gripion.txt)
+
+Also required is the measured relationship between attenuation and temperature as [Bogorodsky *et al.*](https://doi.org/10.1007/978-94-009-5275-1). This data is in the repository [here](data_raw/measured_att_vs_temp.txt) and can be derived from the data plotted in the paper by [Avva *et al.* here](https://arxiv.org/pdf/1409.5413.pdf).
 
 ## Analysis Scripts
 
