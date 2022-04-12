@@ -61,64 +61,9 @@ def main(bulk_att_file, freqs_to_plot):
     print("index \t Freq [MHz]")
     for i in range(len(att_freq)):
         print("%i \t %.2f" % (i, att_freq[i]/1e6))
+
+    attmodel_macgregor, attmodel_pure, attmodel_bog, attmodel_paden = A07_plot_att_vs_depth.setup_models()
     
-    # Load GRIP borehole data.
-    max_depth = 3004.0
-    depths = np.linspace(0.0, max_depth, 3004)
-
-    temps = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/griptemp.txt",
-                                                       skiprows=40, delimiter="\t")
-    cls = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/gripion.txt",
-                                                     skiprows=75, usecols=[0, 6])
-    nh4s = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/gripion.txt",
-                                                      skiprows=75, usecols=[0, 11])
-    deps = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/gripdep.txt",
-                                                      skiprows=80, usecols=[0, 1])
-    hs = A07_plot_att_vs_depth.load_and_interpolate(depths, "./data_raw/gripdep.txt",
-                                                    skiprows=80, usecols=[0, 2])    
-
-    # H+ (hs) is in units of micromolarity.
-    # reported as "micromols per kg"
-    
-    # Cl (cls) is in units of ppm.
-    cl_molar_mass = 35.453  # g/mol
-    cls = cls / cl_molar_mass # uM
-    
-    # NH4 (nh4s) is in units of ppm.
-    nh4_molar_mass = 18.04  # g/mol
-    nh4s = nh4s / nh4_molar_mass # uM
-
-    T_r = -21.0  # C
-
-    sigma_pure = 9.2 # uS/m
-    sigma_pure_uc = 0.2 
-    
-    mu_h = 3.2  # S/m/M
-    mu_h_uc = 0.5
-    mu_cl = 0.43  # S/m/M
-    mu_cl_uc = 0.07
-    mu_nh4 = 0.8  # S/m/M
-    mu_nh4_uc = 0.05  # estimated
-
-    E_pure = 0.51 #0.55  # eV
-    E_pure_uc = 0.05
-    E_h = 0.20  # eV
-    E_h_uc = 0.04
-    E_cl = 0.19  # eV
-    E_cl_uc = 0.02
-    E_nh4 = 0.23  # eV
-    E_nh4_uc = 0.03  # estimated
-
-    # MacGregor model of att. vs depth
-    attmodel_macgregor = experiment.AttenuationModel(depths, hs, cls, nh4s,
-                                                     sigma_pure, sigma_pure_uc,
-                                                     [mu_h, mu_cl, mu_nh4],
-                                                     [mu_h_uc, mu_cl_uc, mu_nh4_uc],
-                                                     [E_pure, E_h, E_cl, E_nh4],
-                                                     [E_pure_uc, E_h_uc, E_cl_uc, E_nh4_uc],
-                                                     temps, T_r)
-    attmodel_macgregor.smooth_chemistry(window_length=10) # 10 m averaging
-        
     ice_file_name = "./data_processed/averaged_in_ice_trace.npz"
     air_file_name = "./data_processed/averaged_in_air_trace.npz"
     

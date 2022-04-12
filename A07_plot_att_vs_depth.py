@@ -24,19 +24,8 @@ def load_and_interpolate(depths, file_name, skiprows, usecols=None, delimiter=No
     return vals_
 
 
-def main(bulk_att_file, freqs_to_plot):
-    
-    # Load bulk attenuation measurement
-    result_data = np.load(bulk_att_file)
-    att_freq = result_data['freqs']
-    att_yerr_min = result_data['low_bound']
-    att_yerr_max = result_data['high_bound']
-    att_middle = result_data['middle_val']
+def setup_models():
 
-    print("index \t Freq [MHz]")
-    for i in range(len(att_freq)):
-        print("%i \t %.2f" % (i, att_freq[i]/1e6))
-    
     # Load GRIP borehole data.
     max_depth = 3004.0
     depths = np.linspace(0.0, max_depth, 3004)
@@ -129,6 +118,23 @@ def main(bulk_att_file, freqs_to_plot):
                                                  [E_pure_uc, 0.02, 0, 0],
                                                  temps, -15.0)
 
+    return attmodel_macgregor, attmodel_pure, attmodel_bog, attmodel_paden    
+
+
+def main(bulk_att_file, freqs_to_plot):
+    
+    # Load bulk attenuation measurement
+    result_data = np.load(bulk_att_file)
+    att_freq = result_data['freqs']
+    att_yerr_min = result_data['low_bound']
+    att_yerr_max = result_data['high_bound']
+    att_middle = result_data['middle_val']
+
+    print("index \t Freq [MHz]")
+    for i in range(len(att_freq)):
+        print("%i \t %.2f" % (i, att_freq[i]/1e6))
+
+    attmodel_macgregor, attmodel_pure, attmodel_bog, attmodel_paden = setup_models()
         
     ####################################################################################
     # Calculate scale factor to convert bulk attenuation to attenuation for top 1500 m #
